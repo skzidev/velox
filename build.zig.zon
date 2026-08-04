@@ -1,0 +1,22 @@
+.{
+    .name = .zeolite_umm,
+    .version = "0.0.1",
+    .dependencies = .{
+        .zeolite_umm = .{
+            .url = "git+https://github.com/skzidev/zeolite-umm.git#f85137a92063b4887f3458db973a056511802460",
+            .hash = "zeolite_umm-0.0.1-Nqvl8XljAACeSCSFwoMhhPNBrgZVNzGgqNZCEh7xOxQk",
+        },
+        .zeolite_jumptable = .{
+            .url = "git+https://github.com/skzidev/zeolite-jumptable#a1de52599958a9c4bd5266fc861e3e22e61761b2",
+            .hash = "zeolite_jumptable-0.0.1-PgadY-_mAADZMx5zai1w3DGODj8Xl-XtlNbpri_Az5Do",
+        },
+    },
+    .fingerprint = 0xb9118cb252cb9820,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+    },
+}
