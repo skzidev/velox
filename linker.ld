@@ -1,6 +1,6 @@
-/* Zeolite linker script */
+/* Velox linker script */
 
-ENTRY(__zeolite_boot__)
+ENTRY(__velox_boot__)
 
 MEMORY
 {
@@ -15,7 +15,7 @@ SECTIONS
 
     .code_signature :
     {
-        KEEP(*(.__zeolite_header__))
+        KEEP(*(.__velox_header__))
         FILL(0)
         . = ORIGIN(USER_RAM) + 0x20;
     } > USER_RAM
@@ -23,7 +23,7 @@ SECTIONS
     .text : ALIGN(8)
     {
         __text_start = .;
-        KEEP(*(.__zeolite_boot__))
+        KEEP(*(.__velox_boot__))
         *(.text .text.*)
         __text_end = .;
     } > USER_RAM

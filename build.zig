@@ -1,7 +1,7 @@
 //! Build system definitions
 const std = @import("std");
 
-// This build script compiles the Zeolite Kernel for the VEX V5 brain.
+// This build script compiles the Velox Kernel for the VEX V5 brain.
 // It outputs a proper memory-formatted file.
 
 pub fn build(b: *std.Build) void {
@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const exe = b.addExecutable(.{
-        .name = "kernel.bin",
+        .name = "velox.bin",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/boot.zig"),
             .target = target,
@@ -23,16 +23,16 @@ pub fn build(b: *std.Build) void {
     });
 
     exe.entry = .{
-        .symbol_name = "__zeolite_boot__",
+        .symbol_name = "__velox_boot__",
     };
 
-    // zeolite-umm dependency
-    const umm = b.dependency("zeolite_umm", .{});
-    exe.root_module.addImport("zeolite_umm", umm.module("umm"));
+    // Volex-umm dependency
+    const umm = b.dependency("velox_umm", .{});
+    exe.root_module.addImport("velox_umm", umm.module("umm"));
 
-    // zeolite-jumptable dependency
-    const jmptbl = b.dependency("zeolite_jumptable", .{});
-    exe.root_module.addImport("zeolite_jumptable", jmptbl.module("zeolite_jumptable"));
+    // Volex-jumptable dependency
+    const jmptbl = b.dependency("velox_jumptable", .{});
+    exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
 
     const addrs_ld_path = jmptbl.path("addrs.ld");
     const local_linker_path = b.path("linker.ld");
@@ -60,15 +60,17 @@ pub fn build(b: *std.Build) void {
 
     b.default_step.dependOn(&exe.step);
 
+    // This should be replaced with a Velox CLI, but that hasn't been developed yet
+    // (or this project uses a version from when a Velox CLI didn't exist)
     const upload = b.step("upload", "Upload to the VEX V5 brain");
     const upload_cmd = b.addSystemCommand(&.{
         "cargo-v5",
         "v5",
         "upload",
         "--name",
-        "Zeolite Kernel",
+        "Velox Core",
         "--description",
-        "The Zeolite Kernel",
+        "Velox Program",
         "--icon",
         "cup-in-field",
         "--slot",

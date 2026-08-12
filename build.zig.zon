@@ -1,17 +1,17 @@
 .{
-    .name = .zeolite_umm,
+    .name = .velox_core,
     .version = "0.0.1",
+    .fingerprint = 0xe3685d5fe413aa55,
     .dependencies = .{
-        .zeolite_umm = .{
-            .url = "git+https://github.com/skzidev/zeolite-umm.git#f85137a92063b4887f3458db973a056511802460",
-            .hash = "zeolite_umm-0.0.1-Nqvl8XljAACeSCSFwoMhhPNBrgZVNzGgqNZCEh7xOxQk",
+        .velox_jumptable = .{
+            .url = "git+https://github.com/skzidev/velox-jumptable#e371dab1113dddc3f59b2c740c4c322c309b24ac",
+            .hash = "velox_jumptable-0.0.1-ZP9ZZ6e7BADAxxWKQIYNnjPjiVwPwQOYeVrL2j2al8Hy",
         },
-        .zeolite_jumptable = .{
-            .url = "git+https://github.com/skzidev/zeolite-jumptable#a1de52599958a9c4bd5266fc861e3e22e61761b2",
-            .hash = "zeolite_jumptable-0.0.1-PgadY-_mAADZMx5zai1w3DGODj8Xl-XtlNbpri_Az5Do",
+        .velox_umm = .{
+            .url = "git+https://github.com/skzidev/velox-umm#916110ceb339c44580ed64940aeefe39e5e902d2",
+            .hash = "velox_umm-0.0.1-KSw3tFljAACcd2nmJvlCEty_ohuuj3S_tAXbF7kqZEvW",
         },
     },
-    .fingerprint = 0xb9118cb252cb9820,
     .paths = .{
         "build.zig",
         "build.zig.zon",

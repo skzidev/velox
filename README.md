@@ -1,26 +1,35 @@
-# Zeolite Kernel
+<img align="center" src="assets/demo.png" style="margin: 0 auto; display: block;">
 
-**A modern, safe, and easy-to-use kernel for the VEX V5 Brain, in Zig.**
+<br>
+
+<h1 align="center">Velox</h1>
+
+<p align="center"><strong>A Zig platform for VEX V5.</strong></p>
 
 > [!WARNING]
-> Zeolite has not hit alpha yet. It has yet to undergo stress-testing. It is actively being developed.
-
-## Why use Zeolite?
-
-Existing options (like PROS) lack safety nets.
-
-- Zeolite is designed to be safe. It is engineered in Zig to strike the perfect balance between safety and easy-to-fix errors.
-- Modern tooling. Avoid `#include` nightmares. Use `@import`. Nice and simple.
-- Easy-to-read runtime errors. Tired of cryptic runtime errors? Great. We fix that.
+> Velox has not hit alpha yet. It has yet to undergo stress-testing. It is actively being developed.
 
 ## Acknowledgements
 
-This project would not have been possible if these two projects did not open-source their findings:
+This project would not have been possible without the research from these projects and teams:
 
 - [PROS](https://pros.cs.purdue.edu/)
 - [Vexide](https://vexide.dev/)
+- [38535B High Stakes Source](https://github.com/tubaplayerdis/Gold4Team3CompProj)
+- [vex-v5-research](https://github.com/hatf0/vex-v5-research/tree/master)
+- [VEXAPI](https://github.com/cetio/VEXAPI)
 
-Zeolite builds on their research into the Brain's memory model and configuration.
+Velox builds on their research into the Brain's memory model and configuration.
+
+## Project Structure
+
+Velox is split into packages:
+
+- `velox-core`: Contains boot and startup code. It handles initialization and is the entrypoint for Velox programs.
+- `velox-jumptable`: Contains programmatically generated bindings to the [VEX jumptable](https://internals.vexide.dev/sdk/#jumptable) and the code that generated them.
+- `velox-umm`: A fork of [umm-zig](https://github.com/ZigEmbeddedGroup/umm-zig) that works with Zig 0.16. It is the default allocator, and overrides `std.heap.page_allocator`.
+- `velox-sdk` (planned): Contains wrapper functions to jumptable bindings to make user code easier to write.  
+
 
 ## Roadmap
 
@@ -33,7 +42,7 @@ Zeolite builds on their research into the Brain's memory model and configuration
 
 ## Competition Legality
 
-According to rule `<R8>` of the Override Game Manual, custom firmware modifications are not permitted. Zeolite is a kernel, but it is still a user program. Like PROS and Vexide, it should be considered **legal** unless VEX specifically bans it.
+According to rule `<R8>` of the Override Game Manual, custom firmware modifications are not permitted. Velox is a user program. Like PROS and Vexide, it should be 100% fair game, so long as you understand what it does.
 
 ## Getting Started
 
@@ -45,13 +54,13 @@ According to rule `<R8>` of the Override Game Manual, custom firmware modificati
 
 #### Building
 
-Plug in the V5 Brain, then run these commands:
+Plug the V5 Brain into your computer, then run these commands:
 
 ```bash
 # Clone the repository
-git clone https://github.com/skzidev/zeolite-kernel.git
-cd zeolite-kernel
+git clone https://github.com/skzidev/Velox-core.git
+cd velox-core
 
-# Build the kernel and upload it
+# Build and upload it
 zig build upload
 ```

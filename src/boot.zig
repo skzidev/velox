@@ -1,10 +1,10 @@
 //! bootup handling
 
 const std = @import("std");
-const umm = @import("zeolite_umm");
-const jmptbl = @import("zeolite_jumptable");
+const umm = @import("velox_umm");
+const jmptbl = @import("velox_jumptable");
 
-const ZeoliteHeader = extern struct {
+const VeloxHeader = extern struct {
     sig: u32,
     type: u32,
     owner: u32,
@@ -15,7 +15,7 @@ const ZeoliteHeader = extern struct {
     reserved_4: u32,
 };
 
-export const __zeolite_header__: ZeoliteHeader = .{
+export const __velox_header__: VeloxHeader = .{
     .sig = 0x56355347,
     .type = 0x00000000,
     .owner = 0x00000002,
@@ -27,12 +27,12 @@ export const __zeolite_header__: ZeoliteHeader = .{
 };
 
 // tell backtrace to stop here, initialize stack pointer, call startup.
-export fn __zeolite_boot__() linksection(".__zeolite_boot__") callconv(.naked) noreturn {
+export fn __velox_boot__() linksection(".__velox_boot__") callconv(.naked) noreturn {
     asm volatile (
         \\ mov fp, #0
         \\ mov r7, #0
         \\ ldr sp, =__stack_top
-        \\ blx __zeolite_startup__
+        \\ blx __velox_startup__
     );
 }
 
@@ -55,14 +55,14 @@ pub const os = struct {
 
 // small helper function just for writing text to the screen. this should only be used here.
 fn printAt(msg: []const u8, x: i32, y: i32) void {
-    const c_ptr: [*c]i8 = @ptrCast(@constCast(msg.ptr));
-    _ = jmptbl.display.vexDisplayVPrintf(x, y, 255, c_ptr);
+    const c_ptr: [*:0]const u8 = @ptrCast(msg.ptr);
+    _ = jmptbl.display.vexDisplayPrintf(x, y, 255, c_ptr);
 }
 
 const DimenType = struct { w: i32, h: i32 };
 
 fn getDimensions(msg: []const u8) DimenType {
-    const c_ptr: [*c]i8 = @ptrCast(@constCast(msg.ptr));
+    const c_ptr: [*:0]const u8 = @ptrCast(msg.ptr);
     return DimenType{
         .w = jmptbl.display.vexDisplayStringWidthGet(c_ptr),
         .h = jmptbl.display.vexDisplayStringHeightGet(c_ptr),
@@ -89,18 +89,20 @@ fn captureStackTrace(addrs: []usize) usize {
 }
 
 pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
-    // Crash if the heap is unavailable
+    // crash if the heap is unavailable
     if (!heap_ok or hasPanicked) {
-        _ = jmptbl.system.vexSystemExitRequest();
+        //_ = jmptbl.system.vexSystemExitRequest();
         while (true) _ = jmptbl.task.vexTaskSleep(2);
     }
     hasPanicked = true;
 
+    // display calls require the task check-timeslice prolog
+    _ = jmptbl.task.vexTaskCheckTimeslice();
+
     const SCREEN_WIDTH = 480;
     const SCREEN_HEIGHT = 240;
 
-    // if the heap is available, call VEX functions
-    _ = jmptbl.task.vexTaskCheckTimeslice();
+    // if the heap is available, call vex functions
     _ = jmptbl.display.vexDisplayForegroundColor(0xFFFF0000);
     _ = jmptbl.display.vexDisplayRectFill(0, 32, SCREEN_WIDTH, SCREEN_HEIGHT + 32);
     _ = jmptbl.display.vexDisplayForegroundColor(0xFFFFFFFF);
@@ -146,7 +148,7 @@ pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
 }
 
 // startup the rest of the runtime then call main
-export fn __zeolite_startup__() noreturn {
+export fn __velox_startup__() noreturn {
     // important: DO NOT USE HEAP ALLOCATION HERE
     // clear bss before touching global variables
     @memset(
@@ -163,8 +165,9 @@ export fn __zeolite_startup__() noreturn {
     // Heap allocation is fine now.
     heap_ok = true;
 
-    _ = jmptbl.task.vexPrivateApiEnable();
-    _ = jmptbl.task.vexTaskAdd(@ptrFromInt(@intFromPtr(&zmain)), 2, @as([*c]i8, @ptrCast(@constCast("zeolite"))));
+    // mirror PROS: enable the private API before registering tasks
+    _ = jmptbl.core.vexPrivateApiEnable();
+    _ = jmptbl.task.vexTaskAdd(@ptrFromInt(@intFromPtr(&zmain)), 2, "velox");
     while (true) {
         _ = jmptbl.task.vexTasksRun();
     }
