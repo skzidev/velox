@@ -1,4 +1,4 @@
-<img align="center" src="assets/demo.png" style="margin: 0 auto; display: block;">
+<p align="center"><img src="assets/demo.png" style="margin: 0 auto; display: block;"></p>
 
 <br>
 
@@ -28,8 +28,7 @@ Velox is split into packages:
 - `velox-core`: Contains boot and startup code. It handles initialization and is the entrypoint for Velox programs.
 - `velox-jumptable`: Contains programmatically generated bindings to the [VEX jumptable](https://internals.vexide.dev/sdk/#jumptable) and the code that generated them.
 - `velox-umm`: A fork of [umm-zig](https://github.com/ZigEmbeddedGroup/umm-zig) that works with Zig 0.16. It is the default allocator, and overrides `std.heap.page_allocator`.
-- `velox-sdk` (planned): Contains wrapper functions to jumptable bindings to make user code easier to write.  
-
+- `velox-sdk` (planned): Contains wrapper functions to jumptable bindings to make user code easier to write.
 
 ## Roadmap
 
