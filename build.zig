@@ -4,6 +4,7 @@ const std = @import("std");
 // This build script compiles the Velox Kernel for the VEX V5 brain.
 // It outputs a proper memory-formatted file.
 
+/// Builds a user script
 pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std.Build.LazyPath) *std.Build.Step.Compile {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.resolveTargetQuery(.{
@@ -13,13 +14,16 @@ pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_a9 },
     });
 
+    const core_dependency = b.dependency("velox_core", .{});
+    const core_module = b.createModule(.{
+        .root_source_file = core_dependency.path("src/boot.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const exe = b.addExecutable(.{
         .name = name,
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/boot.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_module = core_module,
     });
 
     exe.entry = .{
@@ -35,7 +39,7 @@ pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std
     exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
 
     const addrs_ld_path = jmptbl.path("addrs.ld");
-    const local_linker_path = b.path("linker.ld");
+    const local_linker_path = core_dependency.path("linker.ld");
 
     const stitch_cmd = b.addSystemCommand(&.{
         "python3", "-c",
@@ -61,6 +65,92 @@ pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std
     return exe;
 }
 
+// This is derived from Vexide's list
+pub const Icon = enum {
+    vex_coding_studio,
+    cool_x,
+    question_mark,
+    pizza,
+    clawbot,
+    robot,
+    power_button,
+    planets,
+    alien,
+    alien_in_ufo,
+    cup_in_field,
+    cup_and_ball,
+    matlab,
+    pros,
+    robot_mesh,
+    robot_mesh_cpp,
+    robot_mesh_blockly,
+    robot_mesh_flowol,
+    robot_mesh_js,
+    robot_mesh_py,
+    code_file,
+    vexcode_brackets,
+    vexcode_blocks,
+    vexcode_python,
+    vexcode_cpp,
+
+    pub fn string(self: Icon) []const u8 {
+        return switch (self) {
+            .vex_coding_studio => "vex-coding-studio",
+            .cool_x => "cool-x",
+            .question_mark => "question-mark",
+            .pizza => "pizza",
+            .clawbot => "clawbot",
+            .robot => "robot",
+            .power_button => "power-button",
+            .planets => "planets",
+            .alien => "alien",
+            .alien_in_ufo => "alien-in-ufo",
+            .cup_in_field => "cup-in-field",
+            .cup_and_ball => "cup-and-ball",
+            .matlab => "matlab",
+            .pros => "pros",
+            .robot_mesh => "robot-mesh",
+            .robot_mesh_cpp => "robot-mesh-cpp",
+            .robot_mesh_blockly => "robot-mesh-blockly",
+            .robot_mesh_flowol => "robot-mesh-flowol",
+            .robot_mesh_js => "robot-mesh-js",
+            .robot_mesh_py => "robot-mesh-py",
+            .code_file => "code-file",
+            .vexcode_brackets => "vexcode-brackets",
+            .vexcode_blocks => "vexcode-blocks",
+            .vexcode_python => "vexcode-python",
+            .vexcode_cpp => "vexcode-cpp",
+        };
+    }
+};
+
+pub fn addProgramUpload(b: *std.Build, name: []const u8, desc: []const u8, slot: u8, icon: Icon, file: std.Build.LazyPath) *std.Build.Step {
+    if (slot < 1 or slot > 8) {
+        std.debug.print("Cannot upload on slot {d}, it doesn't exist.", .{slot});
+        @panic("Build halted.");
+    }
+
+    const upload = b.step("upload", "Upload to the V5 Brain");
+    const upload_command = b.addSystemCommand(&.{
+        "cargo-v5",
+        "v5",
+        "upload",
+        "--name",
+        name,
+        "--description",
+        desc,
+        "--slot",
+        b.fmt("{d}", .{slot}),
+        "--icon",
+        icon.string(),
+        "--file",
+    });
+    upload_command.addFileArg(file);
+    upload.dependOn(&upload_command.step);
+    return upload;
+}
+
+/// Builds the raw kernel itself
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.resolveTargetQuery(.{
