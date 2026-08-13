@@ -173,11 +173,11 @@ pub fn build(b: *std.Build) void {
         .symbol_name = "__velox_boot__",
     };
 
-    // Volex-umm dependency
+    // Velox-umm dependency
     const umm = b.dependency("velox_umm", .{});
     exe.root_module.addImport("velox_umm", umm.module("umm"));
 
-    // Volex-jumptable dependency
+    // Velox-jumptable dependency
     const jmptbl = b.dependency("velox_jumptable", .{});
     exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
 
@@ -198,6 +198,12 @@ pub fn build(b: *std.Build) void {
     const dynamic_linker_script = stitch_cmd.addOutputFileArg("stitched_linker.ld"); // sys.argv[3]
 
     exe.setLinkerScript(dynamic_linker_script);
+
+    exe.root_module.addAnonymousImport("user_code", .{
+        .root_source_file = b.path("mock/user_code.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
 
     const bin = exe.addObjCopy(.{
         .format = .bin,

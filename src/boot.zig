@@ -1,8 +1,24 @@
-//! bootup handling
+//! # Bootup code
+//! Contains the signature, bootup sequence, panic handlers, and a zmain
 
 const std = @import("std");
 const umm = @import("velox_umm");
 const jmptbl = @import("velox_jumptable");
+const banner = @import("banner.zig");
+const validation = @import("validation.zig");
+const vbar = @import("vbar.zig");
+const user_code = @import("user_code");
+
+// don't compile an invalid user program
+comptime {
+    validation.validateUserProgram(user_code);
+    // Force the exception handler modules to be analyzed so their assembly
+    // stubs actually make it into the binary.
+    _ = @import("handlers/fault.zig");
+    _ = @import("handlers/irq.zig");
+    _ = @import("handlers/fiq.zig");
+    _ = @import("handlers/svc.zig");
+}
 
 const VeloxHeader = extern struct {
     sig: u32,
@@ -91,7 +107,7 @@ fn captureStackTrace(addrs: []usize) usize {
 pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
     // crash if the heap is unavailable
     if (!heap_ok or hasPanicked) {
-        //_ = jmptbl.system.vexSystemExitRequest();
+        jmptbl.system.vexSystemExitRequest();
         while (true) _ = jmptbl.task.vexTaskSleep(2);
     }
     hasPanicked = true;
@@ -165,7 +181,9 @@ export fn __velox_startup__() noreturn {
     // Heap allocation is fine now.
     heap_ok = true;
 
-    // mirror PROS: enable the private API before registering tasks
+    // initialize the vector table
+    vbar.install_vectors();
+
     _ = jmptbl.core.vexPrivateApiEnable();
     _ = jmptbl.task.vexTaskAdd(@ptrFromInt(@intFromPtr(&zmain)), 2, "velox");
     while (true) {
@@ -174,6 +192,8 @@ export fn __velox_startup__() noreturn {
 }
 
 fn zmain() noreturn {
+    banner.printBanner();
+    jmptbl.display.vexDisplayCircleFill(480 / 2, (240 / 2) + 32, 100);
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
     }

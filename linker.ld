@@ -8,6 +8,9 @@ MEMORY
 }
 
 __stack_size = 128K;
+__abort_stack_size = 16K;
+__irq_stack_size = 8K;
+__fiq_stack_size = 8K;
 
 SECTIONS
 {
@@ -24,6 +27,7 @@ SECTIONS
     {
         __text_start = .;
         KEEP(*(.__velox_boot__))
+        KEEP(*(.vectors))
         *(.text .text.*)
         __text_end = .;
     } > USER_RAM
@@ -55,6 +59,32 @@ SECTIONS
         __stack_bottom = .;
         . += __stack_size;
         __stack_top = .;
+    } > USER_RAM
+
+    /* Dedicated stack for the fault handlers. VEXos's own abort stack is too
+       small for our fault reporting, and we may need a valid stack even when
+       the main stack is corrupt. */
+    .abort_stack (NOLOAD) : ALIGN(8)
+    {
+        __abort_stack_bottom = .;
+        . += __abort_stack_size;
+        __abort_stack_top = .;
+    } > USER_RAM
+
+    /* Dedicated stacks for the IRQ and FIQ handlers. They are banked: the CPU
+       switches SP to them automatically when it enters those modes. */
+    .irq_stack (NOLOAD) : ALIGN(8)
+    {
+        __irq_stack_bottom = .;
+        . += __irq_stack_size;
+        __irq_stack_top = .;
+    } > USER_RAM
+
+    .fiq_stack (NOLOAD) : ALIGN(8)
+    {
+        __fiq_stack_bottom = .;
+        . += __fiq_stack_size;
+        __fiq_stack_top = .;
     } > USER_RAM
 
     . = ALIGN(8);
