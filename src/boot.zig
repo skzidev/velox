@@ -193,7 +193,8 @@ export fn __velox_startup__() noreturn {
 
 fn zmain() noreturn {
     banner.printBanner();
-    jmptbl.display.vexDisplayCircleFill(480 / 2, (240 / 2) + 32, 100);
+    user_code.main();
+    // todo maybe VexSystemExitRequest?
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
     }
