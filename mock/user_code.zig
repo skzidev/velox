@@ -2,7 +2,7 @@
 //! Provides all of the utilities
 //! **This does not get shipped when users install the package**
 
-pub fn main() void {
+pub fn main() !void {
     while (true) {}
     return 0;
 }

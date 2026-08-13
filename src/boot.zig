@@ -193,7 +193,9 @@ export fn __velox_startup__() noreturn {
 
 fn zmain() noreturn {
     banner.printBanner();
-    user_code.main();
+    user_code.main() catch {
+        @panic("User code returned");
+    };
     // todo maybe VexSystemExitRequest?
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);

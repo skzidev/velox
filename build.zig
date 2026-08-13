@@ -4,8 +4,14 @@ const std = @import("std");
 // This build script compiles the Velox Kernel for the VEX V5 brain.
 // It outputs a proper memory-formatted file.
 
+pub const ImportConfig = struct {
+    name: []const u8,
+    modName: []const u8,
+    dep: *std.Build.Dependency,
+};
+
 /// Builds a user script
-pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std.Build.LazyPath) *std.Build.Step.Compile {
+pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std.Build.LazyPath, usr_code_deps: *[]const ImportConfig) *std.Build.Step.Compile {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.resolveTargetQuery(.{
         .cpu_arch = .arm,
@@ -54,13 +60,15 @@ pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std
 
     const dynamic_linker_script = stitch_cmd.addOutputFileArg("stitched_linker.ld"); // sys.argv[3]
 
-    exe.setLinkerScript(dynamic_linker_script);
+    const userCodeModule = b.createModule(.{ .target = target, .optimize = optimize, .root_source_file = usr_code_root });
 
-    exe.root_module.addAnonymousImport("user_code", .{
-        .root_source_file = usr_code_root,
-        .target = target,
-        .optimize = optimize,
-    });
+    for (usr_code_deps) |dep| {
+        userCodeModule.addImport(dep.name, dep.dep.module(dep.modName));
+    }
+
+    exe.root_module.addImport("user_code", userCodeModule);
+
+    exe.setLinkerScript(dynamic_linker_script);
 
     return exe;
 }
