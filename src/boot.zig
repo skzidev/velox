@@ -3,6 +3,11 @@
 
 const std = @import("std");
 const umm = @import("velox_umm");
+
+pub const std_options: std.Options = .{
+    .page_size_min = 4 << 10,
+    .page_size_max = 4 << 10,
+};
 const jmptbl = @import("velox_jumptable");
 const banner = @import("banner.zig");
 const validation = @import("validation.zig");

@@ -11,7 +11,7 @@ pub const ImportConfig = struct {
 };
 
 /// Builds a user script
-pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std.Build.LazyPath, usr_code_deps: *[]const ImportConfig) *std.Build.Step.Compile {
+pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std.Build.LazyPath, usr_code_deps: []const ImportConfig) *std.Build.Step.Compile {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.resolveTargetQuery(.{
         .cpu_arch = .arm,

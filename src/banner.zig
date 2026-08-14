@@ -33,10 +33,11 @@ pub const banner =
     \\                          / /"
     \\                        ¸//"
     \\                       ¸="
+    \\
 ;
 
 pub fn printBanner() void {
     _ = jmptbl.serial.vexSerialWriteBuffer(1, @constCast(banner), banner.len);
-    const dataline = "Welcome to Velox v" ++ VeloxVersionAsString ++ ". Running on Zig " ++ builtin.zig_version_string ++ ".";
+    const dataline = "Welcome to Velox v" ++ VeloxVersionAsString ++ ". Running on Zig " ++ builtin.zig_version_string ++ ".\n";
     _ = jmptbl.serial.vexSerialWriteBuffer(1, @constCast(dataline), dataline.len);
 }
