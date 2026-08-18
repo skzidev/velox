@@ -36,13 +36,17 @@ pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std
         .symbol_name = "__velox_boot__",
     };
 
-    // Volex-umm dependency
+    // Velox-umm dependency
     const umm = b.dependency("velox_umm", .{});
     exe.root_module.addImport("velox_umm", umm.module("umm"));
 
-    // Volex-jumptable dependency
+    // Velox-jumptable dependency
     const jmptbl = b.dependency("velox_jumptable", .{});
     exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
+
+    // Velox-sdk dependency
+    const sdk = b.dependency("velox_sdk", .{});
+    exe.root_module.addImport("velox_sdk", sdk.module("velox_sdk"));
 
     const addrs_ld_path = jmptbl.path("addrs.ld");
     const local_linker_path = core_dependency.path("linker.ld");
@@ -189,6 +193,10 @@ pub fn build(b: *std.Build) void {
     const jmptbl = b.dependency("velox_jumptable", .{});
     exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
 
+    // Velox-sdk dependency
+    const sdk = b.dependency("velox_sdk", .{});
+    exe.root_module.addImport("velox_sdk", sdk.module("velox_sdk"));
+
     const addrs_ld_path = jmptbl.path("addrs.ld");
     const local_linker_path = b.path("linker.ld");
 
@@ -207,11 +215,11 @@ pub fn build(b: *std.Build) void {
 
     exe.setLinkerScript(dynamic_linker_script);
 
-    exe.root_module.addAnonymousImport("user_code", .{
-        .root_source_file = b.path("mock/user_code.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    const user_code = b.createModule(.{ .root_source_file = b.path("mock/user_code.zig"), .target = target, .optimize = optimize });
+
+    user_code.addImport("velox_sdk", sdk.module("velox_sdk"));
+
+    exe.root_module.addImport("user_code", user_code);
 
     const bin = exe.addObjCopy(.{
         .format = .bin,

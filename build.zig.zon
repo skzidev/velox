@@ -11,6 +11,10 @@
             .url = "git+https://github.com/skzidev/velox-umm#916110ceb339c44580ed64940aeefe39e5e902d2",
             .hash = "velox_umm-0.0.1-KSw3tFljAACcd2nmJvlCEty_ohuuj3S_tAXbF7kqZEvW",
         },
+        .velox_sdk = .{
+            .url = "git+https://github.com/skzidev/velox-sdk#4f80942d17122c92564d0717692123453dd7b506",
+            .hash = "velox_sdk-0.0.0-0ueybTe0AADvc7WutJ0M5Tu6wCCPsCAknWSc5i6TQiiH",
+        },
     },
     .paths = .{
         "build.zig",

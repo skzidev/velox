@@ -3,6 +3,7 @@
 
 const std = @import("std");
 const umm = @import("velox_umm");
+const velox_sdk = @import("velox_sdk");
 
 pub const std_options: std.Options = .{
     .page_size_min = 4 << 10,
@@ -198,10 +199,21 @@ export fn __velox_startup__() noreturn {
 
 fn zmain() noreturn {
     banner.printBanner();
-    user_code.main() catch {
+
+    var v5io = velox_sdk.V5Io.init();
+
+    const init: velox_sdk.Init(user_code.ports) = .{
+        .arena = std.heap.ArenaAllocator.init(std.heap.page_allocator),
+        .gpa = std.heap.DebugAllocator(.{ .thread_safe = true }).init,
+        .io = v5io.io(),
+        // TODO: Replace this with some code that constructs tha appropriate struct
+        .devices = .{},
+    };
+
+    user_code.main(init) catch {
         @panic("User code returned");
     };
-    // todo maybe VexSystemExitRequest?
+    // todo maybe VexSystemExitRequest on code exit?
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
     }
