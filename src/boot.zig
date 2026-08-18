@@ -4,16 +4,18 @@
 const std = @import("std");
 const umm = @import("velox_umm");
 const velox_sdk = @import("velox_sdk");
-
-pub const std_options: std.Options = .{
-    .page_size_min = 4 << 10,
-    .page_size_max = 4 << 10,
-};
+const devices = @import("devices.zig");
 const jmptbl = @import("velox_jumptable");
 const banner = @import("banner.zig");
 const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
+
+pub const std_options: std.Options = .{
+    .page_size_max = 4096,
+    .page_size_min = 1,
+    .networking = false,
+};
 
 // don't compile an invalid user program
 comptime {
@@ -207,7 +209,7 @@ fn zmain() noreturn {
         .gpa = std.heap.DebugAllocator(.{ .thread_safe = true }).init,
         .io = v5io.io(),
         // TODO: Replace this with some code that constructs tha appropriate struct
-        .devices = .{},
+        .devices = devices.createDevices(user_code.ports),
     };
 
     user_code.main(init) catch {
