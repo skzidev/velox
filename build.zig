@@ -218,6 +218,7 @@ pub fn build(b: *std.Build) void {
     const user_code = b.createModule(.{ .root_source_file = b.path("mock/user_code.zig"), .target = target, .optimize = optimize });
 
     user_code.addImport("velox_sdk", sdk.module("velox_sdk"));
+    user_code.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
 
     exe.root_module.addImport("user_code", user_code);
 

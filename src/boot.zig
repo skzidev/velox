@@ -12,8 +12,14 @@ const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
 
 pub const std_options: std.Options = .{
+    // this setting is required because of how umm works.
+    // in Zig, page_allocator just grabs huge chunks of memory (4096 bytes)
+    // and then other allocators sit on top of it and carve out smaller chunks.
+    // this essentially ensures that memory is allocated in 4096 blocks.
     .page_size_max = 4096,
-    .page_size_min = 1,
+    .page_size_min = 4096,
+    // the v5 brain doesn't have wifi, so we want to prevent users from breaking things
+    // by trying to use networking.
     .networking = false,
 };
 
@@ -39,7 +45,7 @@ const VeloxHeader = extern struct {
     reserved_4: u32,
 };
 
-export const __velox_header__: VeloxHeader = .{
+export const __velox_header__ = VeloxHeader{
     .sig = 0x56355347,
     .type = 0x00000000,
     .owner = 0x00000002,
@@ -214,8 +220,10 @@ fn zmain() noreturn {
 
     user_code.main(init) catch {
         @panic("User code returned");
+        // todo maybe VexSystemExitRequest on code exit?
+        // this is ultimately not in line with our goal.
+        // we want user code to be as deterministic in comp as possible.
     };
-    // todo maybe VexSystemExitRequest on code exit?
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
     }

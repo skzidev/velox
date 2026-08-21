@@ -4,16 +4,16 @@
     .fingerprint = 0xe3685d5fe413aa55,
     .dependencies = .{
         .velox_jumptable = .{
-            .url = "git+https://github.com/skzidev/velox-jumptable#e371dab1113dddc3f59b2c740c4c322c309b24ac",
-            .hash = "velox_jumptable-0.0.1-ZP9ZZ6e7BADAxxWKQIYNnjPjiVwPwQOYeVrL2j2al8Hy",
+            .url = "git+https://github.com/skzidev/velox-jumptable#8a619fe255c23c224324c167038c62879a54681d",
+            .hash = "velox_jumptable-0.0.1-ZP9ZZ8zABAD2hXScM_Cj0fFLQTLRo3ldTrVFIZ7Wn6Ci",
         },
         .velox_umm = .{
             .url = "git+https://github.com/skzidev/velox-umm#916110ceb339c44580ed64940aeefe39e5e902d2",
             .hash = "velox_umm-0.0.1-KSw3tFljAACcd2nmJvlCEty_ohuuj3S_tAXbF7kqZEvW",
         },
         .velox_sdk = .{
-            .url = "git+https://github.com/skzidev/velox-sdk#4f80942d17122c92564d0717692123453dd7b506",
-            .hash = "velox_sdk-0.0.0-0ueybTe0AADvc7WutJ0M5Tu6wCCPsCAknWSc5i6TQiiH",
+            .url = "git+https://github.com/skzidev/velox-sdk#8829c50093a939ead92200cd1331065968e66db8",
+            .hash = "velox_sdk-0.0.0-0ueybRhrAQAbO0bpmkXSoaJaemIIopNJVbOh-bepNC5D",
         },
     },
     .paths = .{

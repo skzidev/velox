@@ -1,1 +1,10 @@
-.{}
+.{
+    .motor1 = .{
+        .kind = .motor,
+        .port = 1,
+        .config = .{
+            .cartridge = .green,
+            .reversed = false,
+        },
+    },
+}

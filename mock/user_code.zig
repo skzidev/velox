@@ -1,13 +1,10 @@
-//! # Mock user code
-//! Provides all of the utilities
-//! **This does not get shipped when users install the package**
-
+const std = @import("std");
 const velox = @import("velox_sdk");
-
-pub const ports = @import("ports.zon");
+pub const ports = @import("./ports.zon");
 
 pub fn main(init: velox.Init(ports)) !void {
-    _ = init.devices;
-    while (true) {}
-    return 0;
+    // get the motor on port 1
+    var motor: velox.Motor = init.devices.motor1 orelse try velox.Motor.init(1, false, .green);
+    // spin the motor at 10 volts
+    motor.spinAt(10, .volts);
 }
