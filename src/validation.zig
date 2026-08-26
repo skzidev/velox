@@ -30,3 +30,11 @@ pub fn validateUserProgram(comptime mod: anytype) void {
         validatePortDef(@field(ports, field.name));
     }
 }
+
+test "ensure code validation works" {
+    const exampleModule = struct {
+        pub const ports = .{};
+        pub fn main(_: sdk.Init(ports)) !void {}
+    };
+    comptime validateUserProgram(exampleModule);
+}

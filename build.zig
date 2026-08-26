@@ -275,6 +275,7 @@ fn createTests(
 
     const testStep = b.step("test", "Run tests on the brain");
     const kernelTest = b.addTest(.{
+        .name = "v5test",
         .root_module = root,
         .test_runner = .{
             .path = b.path("./runner/shim.zig"),

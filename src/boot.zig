@@ -11,6 +11,8 @@ const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
 
+const assert = @import("testing.zig").assert;
+
 pub const std_options = std.Options{
     // this setting is required because of how umm works.
     // in Zig, page_allocator just grabs huge chunks of memory (4096 bytes)
@@ -166,7 +168,7 @@ export fn __velox_startup__() noreturn {
 fn zmain() noreturn {
     banner.printBanner();
     banner.serialFlush();
-    _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("kernel test two")), 16);
+    banner.serialFlush();
 
     var v5io = velox_sdk.V5Io.init();
 
@@ -179,6 +181,8 @@ fn zmain() noreturn {
     };
 
     user_code.main(init) catch {
+        _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("error encountered")), 16);
+        banner.serialFlush();
         jmptbl.system.vexSystemExitRequest();
     };
     // exit once main exits
@@ -188,6 +192,6 @@ fn zmain() noreturn {
     }
 }
 
-test "hello world" {
-    std.debug.assert(1 == 1);
+comptime {
+    std.testing.refAllDecls(@This());
 }

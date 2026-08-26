@@ -4,6 +4,7 @@
 const std = @import("std");
 const jmptbl = @import("velox_jumptable");
 const builtin = @import("builtin");
+const assert = @import("testing.zig").assert;
 
 pub const VeloxVersionAsString = "0.0.1";
 const VeloxVersion: std.SemanticVersion = .{
@@ -17,7 +18,7 @@ const banner = std.fmt.comptimePrint(
     \\
     \\                            /|        | Velox v{s}
     \\  ______        ___________/_/        | Zig v{s}
-    \\ \\    \\      |     //     /         | Compiled for {s}
+    \\ \\    \\      |     //     //        | Compiled for {s}
     \\   \\    \\    |___//     //          | SIMD support {s}
     \\     \\    \\    //     //            | Built with type {s}
     \\       \\    \\//     //_____         | {s} a test runner
@@ -50,4 +51,10 @@ pub fn serialFlush() void {
         }
         prev_free = free;
     }
+}
+
+test "ensure banner is correct" {
+    try assert(std.mem.containsAtLeast(u8, banner, 1, "Is a test runner"));
+    try assert(std.mem.containsAtLeast(u8, banner, 1, "Compiled for cortex_a9"));
+    try assert(std.mem.containsAtLeast(u8, banner, 1, "Velox v" ++ VeloxVersionAsString));
 }

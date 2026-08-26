@@ -13,13 +13,11 @@ pub fn main(init: velox.Init(ports)) anyerror!void {
     const stdout = velox.V5Io.File.stdout();
     const stderr = velox.V5Io.File.stderr();
     if (!builtin.is_test or !@hasDecl(builtin, "test_functions")) {
-        try stderr.writeStreamingAll(init.io, "This runner MUST be run in a test");
+        try stderr.writeStreamingAll(init.io, "this runner MUST be run in a test");
         return;
     }
 
-    try stdout.writeStreamingAll(init.io, "Hello, World!");
-
-    const allocator = @constCast(&init.arena).allocator();
+    const allocator: std.mem.Allocator = @constCast(&init.arena).allocator();
 
     const testFunctions: []const std.builtin.TestFn = builtin.test_functions;
 
@@ -27,14 +25,16 @@ pub fn main(init: velox.Init(ports)) anyerror!void {
     var fail: u32 = 0;
 
     for (testFunctions, 1..) |testFunc, i| {
+        const msg = try std.fmt.allocPrint(
+            allocator,
+            "test #{d} \"{s}\"...",
+            .{ i, testFunc.name },
+        );
         try stdout.writeStreamingAll(
             init.io,
-            try std.fmt.allocPrint(
-                allocator,
-                "test #{d} \"{s}\"...",
-                .{ i, testFunc.name },
-            ),
+            msg,
         );
+        defer allocator.free(msg);
         testFunc.func() catch {
             try stdout.writeStreamingAll(init.io, "FAIL\n");
             fail += 1;
@@ -44,12 +44,5 @@ pub fn main(init: velox.Init(ports)) anyerror!void {
         pass += 1;
     }
 
-    try stdout.writeStreamingAll(
-        init.io,
-        try std.fmt.allocPrint(
-            allocator,
-            "{d} pass, {d} fail",
-            .{ pass, fail },
-        ),
-    );
+    try stdout.writeStreamingAll(init.io, "testing done.");
 }

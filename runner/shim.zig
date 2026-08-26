@@ -6,34 +6,17 @@ pub const std_options = std.Options{
     .networking = false,
 };
 
-fn noopAlloc(_: *anyopaque, _: usize, _: std.mem.Alignment, _: usize) ?[*]u8 {
-    @panic("shim: unused");
-}
-
-fn noopResize(_: *anyopaque, _: []u8, _: std.mem.Alignment, _: usize, _: usize) bool {
-    @panic("shim: unused");
-}
-
-fn noopRemap(_: *anyopaque, _: []u8, _: std.mem.Alignment, _: usize, _: usize) ?[*]u8 {
-    @panic("shim: unused");
-}
-
-fn noopFree(_: *anyopaque, _: []u8, _: std.mem.Alignment, _: usize) void {
-    @panic("shim: unused");
-}
+var page_buf: [1024 * 64]u8 = undefined;
+var page_fba = std.heap.FixedBufferAllocator.init(&page_buf);
 
 pub const os = struct {
     pub const heap = struct {
-        pub const page_allocator: std.mem.Allocator = .{
-            .ptr = undefined,
-            .vtable = &.{
-                .alloc = noopAlloc,
-                .resize = noopResize,
-                .remap = noopRemap,
-                .free = noopFree,
-            },
-        };
+        pub const page_allocator = page_fba.allocator();
     };
 };
+
+pub fn panic(_: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
+    while (true) {}
+}
 
 pub fn main() void {}
