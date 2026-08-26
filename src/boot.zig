@@ -11,7 +11,7 @@ const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
 
-pub const std_options: std.Options = .{
+pub const std_options = std.Options{
     // this setting is required because of how umm works.
     // in Zig, page_allocator just grabs huge chunks of memory (4096 bytes)
     // and then other allocators sit on top of it and carve out smaller chunks.
@@ -26,7 +26,7 @@ pub const std_options: std.Options = .{
 // don't compile an invalid user program
 comptime {
     validation.validateUserProgram(user_code);
-    // Force the exception handler modules to be analyzed so their assembly
+    // force the exception handler modules to be analyzed so their assembly
     // stubs actually make it into the binary.
     _ = @import("handlers/fault.zig");
     _ = @import("handlers/irq.zig");
@@ -105,7 +105,7 @@ fn captureStackTrace(addrs: []usize) usize {
     var fp: usize = @frameAddress();
     var count: usize = 0;
     while (fp != 0 and count < addrs.len) {
-        // fp must be 8-aligned and inside mapped RAM
+        // fp must be 8-aligned and inside user ram
         if (fp < 0x03400000 or fp >= 0x08000000 or (fp & 0x7) != 0) break;
         const frame: *const [2]usize = @ptrFromInt(fp);
         const saved_fp = frame[0];
@@ -126,51 +126,8 @@ pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
     }
     hasPanicked = true;
 
-    // display calls require the task check-timeslice prolog
-    _ = jmptbl.task.vexTaskCheckTimeslice();
-
-    const SCREEN_WIDTH = 480;
-    const SCREEN_HEIGHT = 240;
-
-    // if the heap is available, call vex functions
-    _ = jmptbl.display.vexDisplayForegroundColor(0xFFFF0000);
-    _ = jmptbl.display.vexDisplayRectFill(0, 32, SCREEN_WIDTH, SCREEN_HEIGHT + 32);
-    _ = jmptbl.display.vexDisplayForegroundColor(0xFFFFFFFF);
-    _ = jmptbl.display.vexDisplayBackgroundColor(0xFFFF0000);
-
-    const PanicLblDimens = getDimensions("------------------ PANIC ------------------");
-    printAt("------------------ PANIC ------------------", (SCREEN_WIDTH / 2) - @divFloor(PanicLblDimens.w, 2), 32 + 35 - @divFloor(PanicLblDimens.h, 2));
-
-    _ = jmptbl.display.vexDisplayLineDraw((SCREEN_WIDTH / 2) - @divFloor(PanicLblDimens.w, 2), 32 + 45 + @divFloor(PanicLblDimens.h, 2), SCREEN_WIDTH - ((SCREEN_WIDTH / 2) - @divFloor(PanicLblDimens.w, 2)), 32 + 45 + @divFloor(PanicLblDimens.h, 2));
-
-    const ErrDimens = getDimensions(msg);
-    printAt(msg, ((SCREEN_WIDTH / 4) * 3) - @divFloor(ErrDimens.w, 2), (SCREEN_HEIGHT / 2) - @divFloor(ErrDimens.h, 2));
-    _ = jmptbl.display.vexDisplayRectDraw(15, 15 + 32, SCREEN_WIDTH - 15, SCREEN_HEIGHT + 32 - 15);
-
-    var arena = std.heap.ArenaAllocator.init(global_alloc.allocator());
-    const allocator = arena.allocator();
-
-    const divider_y: i32 = 32 + 45 + @divFloor(PanicLblDimens.h, 2);
-    const available_height: i32 = (SCREEN_HEIGHT + 32 - 15) - divider_y;
-
-    var addrs: [32]usize = undefined;
-    const n = captureStackTrace(&addrs);
-
-    if (n == 0) {
-        printAt("Stack Trace Unavailable", 100, 100);
-    } else {
-        for (addrs[0..n], 0..) |addr, i| {
-            const message = std.fmt.allocPrint(allocator, "0x{x:0>8}", .{addr}) catch {
-                @panic("Memory Error");
-            };
-            const dimens = getDimensions(message);
-            const y: i32 = divider_y + 15 + @divFloor(available_height * @as(i32, @intCast(i)), @as(i32, @intCast(n)));
-            printAt(message, (SCREEN_WIDTH / 4) - @divFloor(dimens.w, 2), y);
-        }
-    }
-
-    // we can't/shouldn't use defer because the scope is "noreturn"
-    arena.deinit();
+    // This is a test. This should be replaced with printing actual information to the brain and to the brain screen.
+    _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("hello world")), msg.len);
 
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
@@ -179,7 +136,7 @@ pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
 
 // startup the rest of the runtime then call main
 export fn __velox_startup__() noreturn {
-    // important: DO NOT USE HEAP ALLOCATION HERE
+    heap_ok = false;
     // clear bss before touching global variables
     @memset(
         @as([*]u8, @ptrCast(&__bss_start))[0 .. @intFromPtr(&__bss_end) - @intFromPtr(&__bss_start)],
@@ -191,15 +148,16 @@ export fn __velox_startup__() noreturn {
     const end = @intFromPtr(&__heap_end);
     const heap_slice = @as([*]u8, @ptrCast(&__heap_start))[0..(end - start)];
 
-    global_alloc = UmmAllocType.init(heap_slice) catch unreachable;
-    // Heap allocation is fine now.
+    global_alloc = UmmAllocType.init(heap_slice) catch {
+        @panic("Cannot initalize heap allocator");
+    };
     heap_ok = true;
 
     // initialize the vector table
     vbar.install_vectors();
 
-    _ = jmptbl.core.vexPrivateApiEnable();
-    _ = jmptbl.task.vexTaskAdd(@ptrFromInt(@intFromPtr(&zmain)), 2, "velox");
+    jmptbl.core.vexPrivateApiEnable();
+    _ = jmptbl.task.vexTaskAdd(@ptrFromInt(@intFromPtr(&zmain)), 2, "velox_main");
     while (true) {
         _ = jmptbl.task.vexTasksRun();
     }
@@ -207,6 +165,8 @@ export fn __velox_startup__() noreturn {
 
 fn zmain() noreturn {
     banner.printBanner();
+    banner.serialFlush();
+    _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("kernel test two")), 16);
 
     var v5io = velox_sdk.V5Io.init();
 
@@ -214,17 +174,20 @@ fn zmain() noreturn {
         .arena = std.heap.ArenaAllocator.init(std.heap.page_allocator),
         .gpa = std.heap.DebugAllocator(.{ .thread_safe = true }).init,
         .io = v5io.io(),
-        // TODO: Replace this with some code that constructs tha appropriate struct
+        // TODO: Replace this with some code that constructs the appropriate struct
         .devices = devices.createDevices(user_code.ports),
     };
 
     user_code.main(init) catch {
-        @panic("User code returned");
-        // todo maybe VexSystemExitRequest on code exit?
-        // this is ultimately not in line with our goal.
-        // we want user code to be as deterministic in comp as possible.
+        jmptbl.system.vexSystemExitRequest();
     };
+    // exit once main exits
+    jmptbl.system.vexSystemExitRequest();
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
     }
+}
+
+test "hello world" {
+    std.debug.assert(1 == 1);
 }
