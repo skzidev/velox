@@ -2,3 +2,4 @@
 zig-out/
 zig-pkg/
 vendor/
+old_build_script.zig

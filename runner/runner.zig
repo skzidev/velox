@@ -1,6 +1,6 @@
 const builtin = @import("builtin");
 const std = @import("std");
-const velox = @import("velox_sdk");
+const velox = @import("velox");
 
 pub const std_options = std.Options{
     .page_size_max = 4096,
@@ -11,7 +11,9 @@ pub const ports = .{};
 
 pub fn main(init: velox.Init(ports)) anyerror!void {
     const stdout = velox.V5Io.File.stdout();
+    defer stdout.close(init.io);
     const stderr = velox.V5Io.File.stderr();
+    defer stderr.close(init.io);
     if (!builtin.is_test or !@hasDecl(builtin, "test_functions")) {
         try stderr.writeStreamingAll(init.io, "this runner MUST be run in a test");
         return;

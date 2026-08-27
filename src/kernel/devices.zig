@@ -40,7 +40,7 @@ pub fn createDevices(comptime config: anytype) velox_sdk.Peripherals.Peripherals
         @field(devices, field.name) = switch (value.kind) {
             .motor => velox_sdk.Motor.init(
                 value.port,
-                value.config.reversed,
+                if (value.config.reversed) .reverse else .forward,
                 value.config.cartridge,
             ) catch null,
             .adi => velox_sdk.ADI.init(value.config.adi, value.config.adiKind, value.port),

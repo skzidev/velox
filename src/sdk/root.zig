@@ -1,0 +1,171 @@
+//! # Velox SDK
+//!
+//! The Velox SDK provides a safe, idiomatic Zig abstraction layer over the
+//! VEX V5 Brain hardware. It lets user programs control motors, read sensors,
+//! display text on the LCD, access the SD card, and manage concurrent tasks
+//! — all without calling raw C / PROS / RobotC APIs.
+//!
+//! ## Quick start
+//!
+//! The entry point for user code is the [`Init`] (sometimes called the
+//! "Juicy Main"). It bundles a debug allocator, an arena allocator, a
+//! [`V5Io`] instance (which implements `std.Io`), and a comptime-generated
+//! [`Peripherals`] struct that holds typed device handles.
+//!
+//! ```zig
+//! const velox = @import("velox_sdk");
+//!
+//! const MyDevices = struct {
+//!     front_left: struct { .type = .motor },
+//!     front_right: struct { .type = .motor },
+//!     distance_sensor: struct { .type = .distance },
+//! };
+//!
+//! pub fn main() void {
+//!     var app = velox.Init(MyDevices){};
+//!     app.devices.front_left.spinAt(100, .percent);
+//! }
+//! ```
+//!
+
+const std = @import("std");
+const io = @import("./Io.zig");
+const init = @import("Init.zig");
+const comp = @import("./comp.zig");
+const controller = @import("controller.zig");
+
+/// The "Juicy Main" init type — the entry point for all Velox user programs.
+///
+/// Returned from `velox_sdk.Init(MyDevices){}`. Contains the allocator,
+/// I/O handle, and all device peripherals you declared at compile time.
+pub const Init = init.Init;
+
+/// An abstraction over the V5 Brain's LCD display.
+///
+/// Provides simple line-based text output to the built-in LCD screen.
+///
+/// ```zig
+/// velox_sdk.Display.printOnLine("Hello, VEX!", 0);
+/// ```
+pub const Display = @import("display.zig").Display;
+
+/// A comptime-generic type that builds a struct of typed device handles
+/// from a user-supplied configuration.
+///
+/// ```zig
+/// const MyDevices = struct {
+///     motor_left: struct { .type = .motor },
+///     dist_front: struct { .type = .distance },
+/// };
+///
+/// const Devices = velox_sdk.Peripherals(MyDevices);
+/// ```
+pub const Peripherals = @import("Peripherals.zig");
+
+/// A `std.Io` implementation tailored for the VEX V5 Brain.
+///
+/// Supports console I/O over serial, a single SD-card file at a time,
+/// cooperative concurrency via VEXos tasks, cancellation, monotonic clocks,
+/// and a hardware-seeded PRNG.
+///
+/// An instance is provided inside [`Init`]. Use `app.io` to obtain the
+/// `std.Io` interface.
+///
+/// ```zig
+/// var stdout = app.io.stdout();
+/// _ = try stdout.writeAll("booted\n");
+/// ```
+pub const V5Io = io.V5Io;
+
+const motor = @import("devices/Motor.zig");
+const distance = @import("devices/Distance.zig");
+const adi = @import("devices/ADI.zig");
+const bumper = @import("devices/Bumper.zig");
+const rotational = @import("devices/Rotation.zig");
+const inertial = @import("devices/Inertial.zig");
+const pneumatic = @import("devices/Pneumatic.zig");
+const optical = @import("devices/Optical.zig");
+
+/// A VEX V5 Smart Motor (both 11 W and 5.5 W variants).
+///
+/// Supports setting speed in RPM, voltage, or percent; reading temperature,
+/// encoder position, and efficiency; and configuring braking mode and
+/// cartridge type.
+///
+/// ```zig
+/// var motor = try velox_sdk.Motor.init(1, false, .green);
+/// motor.spinAt(200, .rpm);
+/// ```
+pub const Motor = motor.Motor;
+
+/// A VEX V5 Distance Sensor (276-4852).
+///
+/// Measures distance to the nearest detected object in mm, cm, inches, or
+/// feet, and reports confidence, object size, and object velocity.
+///
+/// ```zig
+/// var dist = try velox_sdk.Distance.init(5);
+/// const cm: f32 = dist.distance(.centimeter);
+/// ```
+pub const Distance = distance.Distance;
+
+/// A VEX ADI (Analog/Digital Interface) port on the 3-wire expander.
+///
+/// Configures a single ADI port as analog in/out or digital in/out, and
+/// provides raw read/write access.
+///
+/// ```zig
+/// var adi = velox_sdk.ADI.init(1, .digitalIn);
+/// const val = adi.get();
+/// ```
+pub const ADI = adi.ADI;
+
+/// A VEX bumper switch sensor, connected via an ADI digital input port.
+///
+/// Wraps an [`ADI`] in digital-input mode and exposes a simple
+/// pressed/released state.
+///
+/// ```zig
+/// var bumper = velox_sdk.Bumper.init(1);
+/// if (bumper.state() == .pressed) { ... }
+/// ```
+pub const Bumper = bumper.Bumper;
+
+/// A VEX V5 Rotation Sensor (absolute encoder).
+///
+/// Provides position, angle, velocity, and reset functionality with
+/// support for multiple rotational units.
+///
+/// ```zig
+/// var rot = velox_sdk.Rotation.init(3);
+/// rot.reset();
+/// const deg: i32 = rot.angle(.degree);
+/// ```
+pub const Rotation = rotational.Rotation;
+
+/// A VEX V5 Inertial Sensor (IMU).
+///
+/// Provides heading, quaternion, and rotation tracking.
+///
+/// ```zig
+/// var imu = velox_sdk.Inertial.init(6);
+/// imu.reset();
+/// const heading = imu.heading(.degree);
+/// ```
+pub const Inertial = inertial.Inertial;
+
+/// A VEX pneumatic solenoid, connected via an ADI digital output port.
+///
+/// Controls a single-acting or double-acting pneumatic cylinder.
+///
+/// ```zig
+/// var piston = velox_sdk.Pneumatic.init(1, 0);
+/// piston.extend();
+/// piston.retract();
+/// ```
+pub const Pneumatic = pneumatic.Pneumatic;
+
+/// A VEX V5 Controller.
+///
+/// Provides access to button state and joystick axis values.
+pub const Controller = controller.Controller;

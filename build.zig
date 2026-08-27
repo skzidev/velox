@@ -1,94 +1,88 @@
-//! Build system definitions
 const std = @import("std");
 
-// This build script compiles the Velox Kernel for the VEX V5 brain.
-// It outputs a proper memory-formatted file.
-
-pub const ImportConfig = struct {
-    name: []const u8,
-    modName: []const u8,
-    dep: *std.Build.Dependency,
+const VeloxModules = struct {
+    core: *std.Build.Module,
+    umm: *std.Build.Module,
+    sdk: *std.Build.Module,
+    jumptable: *std.Build.Dependency,
 };
 
-/// Builds a user script
-pub fn createVeloxExecutable(b: *std.Build, name: []const u8, usr_code_root: std.Build.LazyPath, usr_code_deps: []const ImportConfig) *std.Build.Step.Compile {
-    const optimize = b.standardOptimizeOption(.{});
-    const target = b.resolveTargetQuery(.{
-        .cpu_arch = .arm,
-        .os_tag = .freestanding,
-        .abi = .eabihf,
-        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_a9 },
-    });
+fn generateLinkerScript(b: *std.Build, jumptable: *std.Build.Dependency) !std.Build.LazyPath {
+    // initialize IO for linker script read
+    var threaded: std.Io.Threaded = .init_single_threaded;
+    const io = threaded.io();
+    defer threaded.deinit();
 
-    target.result.cpu.features.addFeature(@intFromEnum(std.Target.arm.Feature.neon));
-    target.result.cpu.features.addFeature(@intFromEnum(std.Target.arm.Feature.vfp3d16_sp));
+    // read the linker scripts into ls1 (velox) and ls2 (jumptable)
+    const veloxLinkerScript = try std.Io.Dir.cwd().openFile(io, "linker.ld", .{ .mode = .read_only });
+    const jmptblLinkerScript = try std.Io.Dir.cwd().openFile(io, jumptable.path("addrs.ld").getPath(b), .{ .mode = .read_only });
+    const ls1 = try b.allocator.alloc(u8, try veloxLinkerScript.length(io));
+    const ls2 = try b.allocator.alloc(u8, try jmptblLinkerScript.length(io));
+    _ = try veloxLinkerScript.readPositionalAll(io, ls1, 0);
+    _ = try jmptblLinkerScript.readPositionalAll(io, ls2, 0);
+    veloxLinkerScript.close(io);
+    jmptblLinkerScript.close(io);
 
-    const core_dependency = b.dependency("velox_core", .{});
-    const core_module = b.createModule(.{
-        .root_source_file = core_dependency.path("src/boot.zig"),
-        .target = target,
+    // write the linker script
+    const ls = b.addWriteFiles();
+    return ls.add("ls.ld", b.fmt("{s}\n{s}", .{ ls1, ls2 }));
+}
+
+fn getVeloxModules(b: *std.Build, optimize: std.builtin.OptimizeMode) VeloxModules {
+    const target = getV5Target(b);
+
+    const velox = b.createModule(.{ .root_source_file = b.path("./src/kernel/boot.zig"), .target = target, .optimize = optimize });
+    const umm = b.createModule(.{ .root_source_file = b.path("./src/umm/lib.zig"), .target = target, .optimize = optimize });
+    const sdk = b.addModule("velox_sdk", .{ .root_source_file = b.path("./src/sdk/root.zig"), .target = target, .optimize = optimize });
+    const jumptable = b.dependency("velox_jumptable", .{});
+
+    velox.addImport("velox_sdk", sdk);
+    velox.addImport("velox_umm", umm);
+    velox.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
+    sdk.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
+
+    return .{
+        .core = velox,
+        .umm = umm,
+        .sdk = sdk,
+        .jumptable = jumptable,
+    };
+}
+
+pub fn addExecutable(
+    b: *std.Build,
+    code_root: std.Build.LazyPath,
+    optimize: std.builtin.OptimizeMode,
+) !*std.Build.Step.Compile {
+    const veloxModules = getVeloxModules(b, optimize);
+    const velox = veloxModules.core;
+    const sdk = veloxModules.sdk;
+    const jumptable = veloxModules.jumptable;
+    const user_code = b.createModule(.{
+        .root_source_file = code_root,
         .optimize = optimize,
+        .target = getV5Target(b),
     });
+
+    velox.addImport("user_code", user_code);
+
+    user_code.addImport("velox", sdk);
 
     const exe = b.addExecutable(.{
-        .name = name,
-        .root_module = core_module,
+        .root_module = velox,
+        .name = "velox",
+        .use_llvm = true,
     });
+    exe.entry = .{ .symbol_name = "__velox_boot__" };
 
-    exe.entry = .{
-        .symbol_name = "__velox_boot__",
-    };
+    const ls = try generateLinkerScript(b, jumptable);
 
-    // Velox-umm dependency
-    const umm = b.dependency("velox_umm", .{});
-    exe.root_module.addImport("velox_umm", umm.module("umm"));
-
-    // Velox-jumptable dependency
-    const jmptbl = b.dependency("velox_jumptable", .{});
-    exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
-
-    // Velox-sdk dependency
-    const sdk = b.dependency("velox_sdk", .{});
-    exe.root_module.addImport("velox_sdk", sdk.module("velox_sdk"));
-
-    // build options
-    const build_options = b.addOptions();
-    build_options.addOption(
-        u64,
-        "timestamp",
-        std.Io.Timestamp.now(),
-    );
-
-    exe.addModule("build_options", build_options.createModule());
-
-    const addrs_ld_path = jmptbl.path("addrs.ld");
-    const local_linker_path = core_dependency.path("linker.ld");
-
-    const stitch_cmd = b.addSystemCommand(&.{
-        "python3", "-c",
-        \\import sys
-        \\out = open(sys.argv[3], 'w')
-        \\out.write(open(sys.argv[1], 'r').read() + '\n\n' + open(sys.argv[2], 'r').read())
-        \\out.close()
-    });
-
-    stitch_cmd.addFileArg(addrs_ld_path); // sys.argv[1]
-    stitch_cmd.addFileArg(local_linker_path); // sys.argv[2]
-
-    const dynamic_linker_script = stitch_cmd.addOutputFileArg("stitched_linker.ld"); // sys.argv[3]
-
-    const userCodeModule = b.createModule(.{ .target = target, .optimize = optimize, .root_source_file = usr_code_root });
-
-    for (usr_code_deps) |dep| {
-        userCodeModule.addImport(dep.name, dep.dep.module(dep.modName));
-    }
-
-    exe.root_module.addImport("user_code", userCodeModule);
-
-    exe.setLinkerScript(dynamic_linker_script);
+    exe.setLinkerScript(ls);
 
     return exe;
 }
+
+pub const VeloxBuildError = error{NonexistantSlot};
 
 // This is derived from Vexide's list
 pub const Icon = enum {
@@ -149,160 +143,91 @@ pub const Icon = enum {
     }
 };
 
-pub fn addProgramUpload(b: *std.Build, name: []const u8, desc: []const u8, slot: u8, icon: Icon, file: std.Build.LazyPath) *std.Build.Step {
+pub fn addUpload(
+    b: *std.Build,
+    exe: *std.Build.Step.Compile,
+    name: []const u8,
+    description: []const u8,
+    icon: Icon,
+    slot: u8,
+) !*std.Build.Step.Run {
     if (slot < 1 or slot > 8) {
-        std.debug.print("Cannot upload on slot {d}, it doesn't exist.", .{slot});
-        @panic("Build halted.");
+        return VeloxBuildError.NonexistantSlot;
     }
-
-    const upload = b.step("upload", "Upload to the V5 Brain");
-    const upload_command = b.addSystemCommand(&.{
+    const copy = exe.addObjCopy(.{ .format = .bin });
+    const cmd = b.addSystemCommand(&.{
         "cargo-v5",
         "v5",
         "upload",
         "--name",
         name,
         "--description",
-        desc,
+        description,
         "--slot",
         b.fmt("{d}", .{slot}),
         "--icon",
         icon.string(),
         "--file",
     });
-    upload_command.addFileArg(file);
-    upload.dependOn(&upload_command.step);
-    return upload;
+    cmd.addFileArg(copy.getOutput());
+    cmd.step.dependOn(&copy.step);
+    return cmd;
 }
 
-/// Builds the raw kernel itself
-pub fn build(b: *std.Build) void {
-    // TODO replace this section with createVeloxExecutable
-    const optimize = b.standardOptimizeOption(.{});
-    const target = b.resolveTargetQuery(.{
+fn getV5Target(b: *std.Build) std.Build.ResolvedTarget {
+    return b.resolveTargetQuery(.{
         .cpu_arch = .arm,
         .os_tag = .freestanding,
         .abi = .eabihf,
-        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_a9 },
+        .cpu_model = .{
+            .explicit = &std.Target.arm.cpu.cortex_a9,
+        },
     });
-
-    const exe = b.addExecutable(.{
-        .name = "velox.bin",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/boot.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-
-    exe.entry = .{
-        .symbol_name = "__velox_boot__",
-    };
-
-    // Velox-umm dependency
-    const umm = b.dependency("velox_umm", .{});
-    exe.root_module.addImport("velox_umm", umm.module("umm"));
-
-    // Velox-jumptable dependency
-    const jmptbl = b.dependency("velox_jumptable", .{});
-    exe.root_module.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
-
-    // Velox-sdk dependency
-    const sdk = b.dependency("velox_sdk", .{});
-    exe.root_module.addImport("velox_sdk", sdk.module("velox_sdk"));
-
-    const user_code = b.createModule(.{
-        .root_source_file = b.path("./mock/user_code.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    exe.root_module.addImport("user_code", user_code);
-
-    const addrs_ld_path = jmptbl.path("addrs.ld");
-    const local_linker_path = b.path("linker.ld");
-
-    const stitch_cmd = b.addSystemCommand(&.{
-        "python3", "-c",
-        \\import sys
-        \\out = open(sys.argv[3], 'w')
-        \\out.write(open(sys.argv[1], 'r').read() + '\n\n' + open(sys.argv[2], 'r').read())
-        \\out.close()
-    });
-
-    stitch_cmd.addFileArg(addrs_ld_path); // sys.argv[1]
-    stitch_cmd.addFileArg(local_linker_path); // sys.argv[2]
-
-    const dynamic_linker_script = stitch_cmd.addOutputFileArg("stitched_linker.ld"); // sys.argv[3]
-
-    exe.setLinkerScript(dynamic_linker_script);
-    exe.root_module.stack_protector = false;
-    exe.root_module.stack_check = false;
-
-    b.installArtifact(exe);
-    b.default_step.dependOn(&exe.step);
-
-    _ = createTests(b, target, optimize, sdk, jmptbl, umm, dynamic_linker_script);
 }
 
-fn createTests(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-    sdk: *std.Build.Dependency,
-    jmptbl: *std.Build.Dependency,
-    umm: *std.Build.Dependency,
-    dynamic_linker_script: std.Build.LazyPath,
-) *std.Build.Step {
-    const root = b.createModule(.{
-        .root_source_file = b.path("src/boot.zig"),
-        .optimize = optimize,
-        .target = target,
-    });
+fn createTests(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.Step.Compile {
+    const veloxModules = getVeloxModules(b, optimize);
+    const velox = veloxModules.core;
 
     const runnerModule = b.createModule(.{
         .root_source_file = b.path("./runner/runner.zig"),
-        .target = target,
         .optimize = optimize,
+        .target = getV5Target(b),
     });
+    runnerModule.addImport("velox", veloxModules.sdk);
 
-    runnerModule.addImport("velox_sdk", sdk.module("velox_sdk"));
-    root.addImport("velox_sdk", sdk.module("velox_sdk"));
-    runnerModule.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
-    root.addImport("velox_jumptable", jmptbl.module("velox_jumptable"));
-    root.addImport("velox_umm", umm.module("umm"));
+    velox.addImport("user_code", runnerModule);
 
-    root.addImport("user_code", runnerModule);
-
-    const testStep = b.step("test", "Run tests on the brain");
-    const kernelTest = b.addTest(.{
-        .name = "v5test",
-        .root_module = root,
+    const testing = b.addTest(.{
+        .root_module = velox,
         .test_runner = .{
-            .path = b.path("./runner/shim.zig"),
+            .path = b.path("runner/shim.zig"),
             .mode = .simple,
         },
     });
-    kernelTest.entry = .{ .symbol_name = "__velox_boot__" };
-    kernelTest.setLinkerScript(dynamic_linker_script);
-    testStep.dependOn(&kernelTest.step);
-    const copy = kernelTest.addObjCopy(.{
-        .format = .bin,
-    });
-    const upload_command = b.addSystemCommand(&.{
-        "cargo-v5",
-        "v5",
-        "upload",
-        "--name",
-        "Velox Tests",
-        "--description",
-        "Tests for the Velox kernel",
-        "--slot",
-        b.fmt("{d}", .{8}),
-        "--icon",
-        Icon.code_file.string(),
-        "--file",
-    });
-    upload_command.addFileArg(copy.getOutput());
-    testStep.dependOn(&upload_command.step);
-    return testStep;
+
+    testing.entry = .{ .symbol_name = "__velox_boot__" };
+
+    const ls = try generateLinkerScript(b, veloxModules.jumptable);
+    testing.setLinkerScript(ls);
+
+    return testing;
+}
+
+pub fn build(b: *std.Build) !void {
+    const optimize = std.Build.standardOptimizeOption(b, .{});
+
+    const exe = try addExecutable(b, b.path("mock/user_code.zig"), optimize);
+    b.default_step.dependOn(&exe.step);
+
+    const upload = b.step("upload", "Upload the kernel to the brain");
+    const cmd = try addUpload(b, exe, "Velox", "Velox Kernel", .matlab, 8);
+    upload.dependOn(&cmd.step);
+    upload.dependOn(b.default_step);
+
+    const testgen = b.step("test", "Build a test runner and upload it to the brain");
+    const testing = try createTests(b, optimize);
+    const uploadTest = try addUpload(b, testing, "Velox Tests", "Tests for the Velox Runtime", .code_file, 8);
+    testgen.dependOn(&testing.step);
+    testgen.dependOn(&uploadTest.step);
 }

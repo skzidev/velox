@@ -11,7 +11,8 @@ const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
 
-const assert = @import("testing.zig").assert;
+const testing = @import("testing.zig");
+const assert = testing.assert;
 
 pub const std_options = std.Options{
     // this setting is required because of how umm works.
@@ -34,6 +35,8 @@ comptime {
     _ = @import("handlers/irq.zig");
     _ = @import("handlers/fiq.zig");
     _ = @import("handlers/svc.zig");
+    // recognize umm tests
+    std.testing.refAllDecls(umm);
 }
 
 const VeloxHeader = extern struct {
@@ -168,7 +171,6 @@ export fn __velox_startup__() noreturn {
 fn zmain() noreturn {
     banner.printBanner();
     banner.serialFlush();
-    banner.serialFlush();
 
     var v5io = velox_sdk.V5Io.init();
 
@@ -190,8 +192,4 @@ fn zmain() noreturn {
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
     }
-}
-
-comptime {
-    std.testing.refAllDecls(@This());
 }
