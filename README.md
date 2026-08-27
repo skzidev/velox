@@ -7,16 +7,7 @@
 <p align="center"><strong>A Zig platform for VEX V5.</strong></p>
 
 > [!WARNING]
-> Velox has not hit alpha yet. It can boot on the brain, allocate memory, render graphics, and call VEX SDK bindings, but concurrency, competition and device APIs are being developed.
-
-## Project Structure
-
-Velox is split into packages:
-
-- `velox-core`: Contains boot and startup code. It handles initialization and is the entrypoint for Velox programs. Its build script handles building everything, so the user's build script can just be 20 lines.
-- `velox-jumptable`: Contains programmatically generated bindings to the [VEX jumptable](https://internals.vexide.dev/sdk/#jumptable) and the code that generated them.
-- `velox-umm`: A fork of [umm-zig](https://github.com/ZigEmbeddedGroup/umm-zig) that works with Zig 0.16. It is the default allocator, and overrides `std.heap.page_allocator`.
-- `velox-sdk` (planned): Contains wrapper functions to jumptable bindings to make user code easier to write.
+> Velox has not hit alpha yet. It can boot on the brain, allocate memory, render graphics, and call VEX SDK bindings, but competition and device APIs are being developed.
 
 ## Roadmap
 
@@ -26,6 +17,19 @@ Velox is split into packages:
 - [x] Jumptable integration
 - [ ] Device Drivers
 - [ ] Odometry, Control, & Localization Library
+- [ ] Custom Uploader program
+- [ ] GUI library (Potentially written on top of a library like [Knots](https://codeberg.org/shahwali/knots))
+
+#### Additional work
+
+- [ ] Refactor `velox-jumptable` to just read from C header files and map memory addresses instead of generating bindings
+- [ ] Refactor `velox-jumptable` into this monorepo
+
+## Modules
+
+- [Kernel](./src/kernel/README.md)
+- [SDK](./src/sdk/README.md)
+- [Umm](./src/umm/README.md)
 
 ## Competition Legality
 
@@ -43,23 +47,14 @@ This project would not have been possible without the research from these projec
 
 Velox builds on their research into the Brain's memory model and configuration.
 
-## Getting Started
+## Tests
 
-#### Prerequisites
+Tests are written in Zig's testing framework, and their results are logged over serial. Currently, only tests from the kernel are being recognized. Tests from other modules are not being recognized.
 
-1. Zig 0.16 (`zvm` is recommended if you need more Zig versions)
-2. cargo-v5 (for uploading code to the brain)
-3. A V5 brain.
+Tests run inside of a custom test runner which is itself written using Velox as a program. To run them yourself:
 
-#### Building
-
-Plug the V5 Brain into your computer, then run these commands:
-
-```bash
-# Clone the repository
-git clone https://github.com/skzidev/Velox-core.git
-cd velox-core
-
-# Build and upload it
-zig build upload
+```sh
+zig build run
 ```
+
+I am currently exploring the avenue of using this test runner with other modules, so that way user code could have tests run and we can run actual hardware tests for projects like velox-umm.
