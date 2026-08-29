@@ -1,6 +1,8 @@
 const jmptbl = @import("velox_jumptable");
 const std = @import("std");
 
+// TODO implement display
+
 /// An abstraction over the V5 Brain's built-in LCD display.
 ///
 /// Supports line-based text output. Lines are numbered 0–7.

@@ -1,5 +1,7 @@
 const jmptbl = @import("velox_jumptable");
 
+// TODO setup individual buttons/axes
+
 /// A VEX V5 Controller.
 ///
 /// Provides access to button state and joystick axis values.
@@ -18,7 +20,7 @@ const jmptbl = @import("velox_jumptable");
 /// const value = controller.Input(.axis3).get();  // -127 to 127
 /// ```
 pub const Controller = struct {
-    _kind: ControllerKind,
+    kind: ControllerKind,
 
     /// The controller type (master or partner).
     pub const ControllerKind = enum(c_int) { master = 0, partner, _ };
