@@ -222,8 +222,8 @@ pub fn build(b: *std.Build) !void {
 
     const upload = b.step("upload", "Upload the kernel to the brain");
     const cmd = try addUpload(b, exe, "Velox", "Velox Kernel", .matlab, 8);
-    upload.dependOn(&cmd.step);
     upload.dependOn(b.default_step);
+    upload.dependOn(&cmd.step);
 
     const testgen = b.step("test", "Build a test runner and upload it to the brain");
     const testing = try createTests(b, optimize);
