@@ -71,7 +71,7 @@ pub const Inertial = struct {
     /// ```zig
     /// imu.reset();  // blocks for ~2 seconds
     /// ```
-    pub fn reset(self: *Inertial) void {
+    pub fn reset(self: *const Inertial) void {
         jmptbl.imu.vexDeviceImuReset(self._handle);
     }
 
@@ -83,7 +83,7 @@ pub const Inertial = struct {
     /// const q = try imu.quat();
     /// // q.x, q.y, q.z, q.w
     /// ```
-    pub fn quat(self: *Inertial) !InertialQuaternion {
+    pub fn quat(self: *const Inertial) !InertialQuaternion {
         const quaternion: InertialQuaternion = .{};
         jmptbl.imu.vexDeviceImuQuaternionGet(self._handle, &quaternion);
         return quaternion;
@@ -105,7 +105,7 @@ pub const Inertial = struct {
     /// const deg = imu.heading(.degree);
     /// const rad = imu.heading(.radian);
     /// ```
-    pub fn heading(self: *Inertial, unit: units.RotationalUnit) f64 {
+    pub fn heading(self: *const Inertial, unit: units.RotationalUnit) f64 {
         const deg = jmptbl.imu.vexDeviceImuHeadingGet(self._handle);
         return switch (unit) {
             .degree => deg,

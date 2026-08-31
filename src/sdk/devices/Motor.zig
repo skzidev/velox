@@ -83,12 +83,15 @@ pub const Motor = struct {
         reverse = 1,
     };
 
-    _handle: ?*anyopaque,
-    /// Whether the motor's direction is reversed. When `true`, positive
-    /// speed values spin the motor backward. Can be changed at runtime.
-    isReversed: Direction,
-    /// The cartridge installed in this motor, determining the gear ratio.
-    cartridge: MotorCartridge,
+    pub fn direction(self: *const Motor) Direction {
+        return jmptbl.motor.vexDeviceMotorReverseFlagGet(self.handle);
+    }
+
+    pub fn setDirection(self: *const Motor, spinDirection: Direction) void {
+        jmptbl.motor.vexDeviceMotorReverseFlagSet(self.handle, @intFromEnum(spinDirection));
+    }
+
+    handle: ?*anyopaque,
 
     /// Spins the motor at the given speed in the specified units.
     ///
@@ -112,22 +115,21 @@ pub const Motor = struct {
     /// motor.spinAt(12000, .volts);   // full voltage forward
     /// ```
     pub fn spinAt(
-        self: *Motor,
+        self: *const Motor,
         /// The speed value. Sign determines direction.
-        scalar: i32,
+        speed: i32,
         /// The unit of the speed value.
         unit: units.MotorUnit,
     ) void {
-        const speed = if (self.isReversed) -scalar else scalar;
         switch (unit) {
             .rpm => {
-                jmptbl.motor.vexDeviceMotorVelocitySet(self._handle, speed);
+                jmptbl.motor.vexDeviceMotorVelocitySet(self.handle, speed);
             },
             .volts => {
-                jmptbl.motor.vexDeviceMotorVoltageSet(self._handle, speed);
+                jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, speed);
             },
             .percent => {
-                jmptbl.motor.vexDeviceMotorVoltageSet(self._handle, @divTrunc((speed * 127), 100));
+                jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, @divTrunc((speed * 127), 100));
             },
         }
     }
@@ -147,18 +149,21 @@ pub const Motor = struct {
     pub fn init(
         /// The smart port number (1–20).
         port: u32,
-        /// If `true`, positive speed values spin the motor backward.
-        direction: Direction,
         /// The installed cartridge.
         cart: MotorCartridge,
+        /// The direction in which the motor should spin
+        dir: Direction,
+        /// The braking mode which the motor should use
+        braking: BrakeMode,
     ) errors.DeviceInitError!Motor {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
         const handle = jmptbl.devices.vexDeviceGetByIndex(port - 1);
+        jmptbl.motor.vexDeviceMotorGearingSet(handle, @enumFromInt(@intFromEnum(cart)));
+        jmptbl.motor.vexDeviceMotorReverseFlagSet(handle, @intFromEnum(dir));
+        jmptbl.motor.vexDeviceMotorBrakeModeSet(handle, @enumFromInt(@intFromEnum(braking)));
         return Motor{
-            ._handle = handle,
-            .isReversed = direction,
-            .cartridge = cart,
+            .handle = handle,
         };
     }
 
@@ -175,11 +180,11 @@ pub const Motor = struct {
     /// const temp_f = motor.temp(.fahrenheit);
     /// ```
     pub fn temp(
-        self: *Motor,
+        self: *const Motor,
         /// The unit for the returned temperature.
         unit: units.TempUnit,
     ) f64 {
-        const cTemp = jmptbl.motor.vexDeviceMotorTemperatureGet(self._handle);
+        const cTemp = jmptbl.motor.vexDeviceMotorTemperatureGet(self.handle);
         return switch (unit) {
             .celsius => cTemp,
             .fahrenheit => (cTemp * (9.0 / 5.0)) + 32,
@@ -197,8 +202,8 @@ pub const Motor = struct {
     ///     velox_sdk.Display.printOnLine("MOTOR HOT!", 0);
     /// }
     /// ```
-    pub fn isOverheating(self: *Motor) bool {
-        return jmptbl.motor.vexDeviceMotorOverTempFlagGet(self._handle);
+    pub fn isOverheating(self: *const Motor) bool {
+        return jmptbl.motor.vexDeviceMotorOverTempFlagGet(self.handle);
     }
 
     /// Sets the motor's braking mode.
@@ -211,8 +216,8 @@ pub const Motor = struct {
     /// motor.setBrakingMode(.hold);   // lock in place
     /// motor.setBrakingMode(.coast);  // coast freely
     /// ```
-    pub fn setBrakingMode(self: *Motor, mode: BrakeMode) void {
-        jmptbl.motor.vexDeviceMotorBrakeModeSet(self._handle, mode);
+    pub fn setBrakingMode(self: *const Motor, mode: BrakeMode) void {
+        jmptbl.motor.vexDeviceMotorBrakeModeSet(self.handle, mode);
     }
 
     /// Returns the motor's encoder position in the specified rotational
@@ -232,13 +237,13 @@ pub const Motor = struct {
     /// const degrees = motor.pos(.degree);
     /// const turns = motor.pos(.turn);
     /// ```
-    pub fn pos(self: *Motor, unit: units.RotationalUnit) f64 {
+    pub fn pos(self: *const Motor, unit: units.RotationalUnit) f64 {
         if (unit == .degree or unit == .radian) {
-            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self._handle, .kMotorEncoderDegrees);
+            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderDegrees);
         } else {
-            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self._handle, .kMotorEncoderRotations);
+            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderRotations);
         }
-        var v = jmptbl.motor.vexDeviceMotorPositionGet(self._handle);
+        var v = jmptbl.motor.vexDeviceMotorPositionGet(self.handle);
         if (unit == .radian) {
             v *= (pi / 180);
         }
@@ -256,8 +261,8 @@ pub const Motor = struct {
     ///     // 5.5 W motor
     /// }
     /// ```
-    pub fn kind(self: *Motor) MotorKind {
-        return jmptbl.motor.vexDeviceMotorTypeGet(self._handle);
+    pub fn kind(self: *const Motor) MotorKind {
+        return jmptbl.motor.vexDeviceMotorTypeGet(self.handle);
     }
 
     /// Returns the motor's current efficiency as a percentage (0–100).
@@ -269,8 +274,8 @@ pub const Motor = struct {
     /// ```zig
     /// const eff = motor.efficiency();
     /// ```
-    pub fn efficiency(self: *Motor) f64 {
-        return jmptbl.motor.vexDeviceMotorEfficiencyGet(self._handle);
+    pub fn efficiency(self: *const Motor) f64 {
+        return jmptbl.motor.vexDeviceMotorEfficiencyGet(self.handle);
     }
 
     /// Sets the motor's encoder position to the given value.
@@ -289,16 +294,26 @@ pub const Motor = struct {
     /// motor.setPos(0, .degree);  // reset encoder to 0 degrees
     /// motor.setPos(1.0, .turn);  // set to 1 full turn
     /// ```
-    pub fn setPos(self: *Motor, value: f64, unit: units.RotationalUnit) void {
+    pub fn setPos(self: *const Motor, value: f64, unit: units.RotationalUnit) void {
         var v = value;
         if (unit == .degree or unit == .radian) {
-            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self._handle, .kMotorEncoderDegrees);
+            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderDegrees);
             if (unit == .radian)
                 v *= (pi / 180);
         } else {
-            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self._handle, .kMotorEncoderRotations);
+            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderRotations);
         }
-        jmptbl.motor.vexDeviceMotorPositionSet(self._handle, v);
+        jmptbl.motor.vexDeviceMotorPositionSet(self.handle, v);
+    }
+
+    // TODO add units to speed
+    pub fn spinToPos(self: *const Motor, position: f64, posUnit: units.RotationalUnit, speed: i32) void {
+        const posInDeg = switch (posUnit) {
+            .degree => position,
+            .radian => position * (180 / pi),
+            .turn => position / 360,
+        };
+        jmptbl.motor.vexDeviceMotorAbsoluteTargetSet(self.handle, posInDeg, speed);
     }
 
     /// Stops the motor.
@@ -306,7 +321,7 @@ pub const Motor = struct {
     /// ```zig
     /// motor.stop();
     /// ```
-    pub fn stop(self: *Motor) void {
-        jmptbl.motor.vexDeviceMotorVelocitySet(self._handle, 0);
+    pub fn stop(self: *const Motor) void {
+        jmptbl.motor.vexDeviceMotorVelocitySet(self.handle, 0);
     }
 };

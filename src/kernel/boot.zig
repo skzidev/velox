@@ -132,7 +132,7 @@ pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
     hasPanicked = true;
 
     // This is a test. This should be replaced with printing actual information to the brain and to the brain screen.
-    _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("hello world")), msg.len);
+    _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("issue found")), msg.len);
 
     while (true) {
         _ = jmptbl.task.vexTaskSleep(2);
@@ -174,12 +174,10 @@ fn zmain() noreturn {
 
     var v5io = velox_sdk.V5Io.init();
 
-    const init: velox_sdk.Init(user_code.ports) = .{
+    const init: velox_sdk.Init = .{
         .arena = std.heap.ArenaAllocator.init(std.heap.page_allocator),
         .gpa = std.heap.DebugAllocator(.{ .thread_safe = true }).init,
         .io = v5io.io(),
-        // TODO: Replace this with some code that constructs the appropriate struct
-        .devices = devices.createDevices(user_code.ports),
     };
 
     user_code.main(init) catch {

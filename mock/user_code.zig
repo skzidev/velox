@@ -9,7 +9,10 @@ fn monitorThread(io: std.Io) !void {
     }
 }
 
-pub fn main(init: velox.Init(ports)) !void {
+pub fn main(init: velox.Init) !void {
+    const motor = try velox.Motor.init(5, .blue, .forward, .coast);
+    motor.spinAt(100, .rpm);
+
     _ = try init.io.concurrent(monitorThread, .{init.io});
 
     while (true) {

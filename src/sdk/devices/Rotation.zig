@@ -49,7 +49,7 @@ pub const Rotation = struct {
     /// ```zig
     /// rot.reset();
     /// ```
-    pub fn reset(self: *Rotation) void {
+    pub fn reset(self: *const Rotation) void {
         jmptbl.rotation.vexDeviceAbsEncReset(self._handle);
     }
 
@@ -61,7 +61,7 @@ pub const Rotation = struct {
     /// ```zig
     /// const rpm = rot.velocity();
     /// ```
-    pub fn velocity(self: *Rotation) i32 {
+    pub fn velocity(self: *const Rotation) i32 {
         // TODO add units
         return jmptbl.rotation.vexDeviceAbsEncVelocityGet(self._handle);
     }
@@ -76,7 +76,7 @@ pub const Rotation = struct {
     ///     // readings are inverted
     /// }
     /// ```
-    pub fn isReversed(self: *Rotation) bool {
+    pub fn isReversed(self: *const Rotation) bool {
         return jmptbl.rotation.vexDeviceAbsEncReverseFlagGet(self._handle);
     }
 
@@ -89,7 +89,7 @@ pub const Rotation = struct {
     /// ```zig
     /// rot.setReversed(true);
     /// ```
-    pub fn setReversed(self: *Rotation, reversed: bool) void {
+    pub fn setReversed(self: *const Rotation, reversed: bool) void {
         jmptbl.rotation.vexDeviceAbsEncReverseFlagSet(self._handle, reversed);
     }
 
@@ -102,7 +102,7 @@ pub const Rotation = struct {
     /// ```zig
     /// const ticks = rot.pos();
     /// ```
-    pub fn pos(self: *Rotation) i32 {
+    pub fn pos(self: *const Rotation) i32 {
         // TODO add units
         return jmptbl.rotation.vexDeviceAbsEncPositionGet(self._handle);
     }
@@ -115,7 +115,7 @@ pub const Rotation = struct {
     /// ```zig
     /// rot.setPos(0);  // reset position counter
     /// ```
-    pub fn setPos(self: *Rotation, value: i32) void {
+    pub fn setPos(self: *const Rotation, value: i32) void {
         jmptbl.rotation.vexDeviceAbsEncPositionSet(self._handle, value);
     }
 
@@ -135,7 +135,7 @@ pub const Rotation = struct {
     /// const turn = rot.angle(.turn);    // 0.0–1.0
     /// const rad = rot.angle(.radian);   // 0.0–6.28...
     /// ```
-    pub fn angle(self: *Rotation, unit: units.RotationalUnit) f64 {
+    pub fn angle(self: *const Rotation, unit: units.RotationalUnit) f64 {
         const deg = jmptbl.rotation.vexDeviceAbsEncAngleGet(self._handle);
         return switch (unit) {
             .radian => deg * (pi / 180),
@@ -153,7 +153,7 @@ pub const Rotation = struct {
     /// ```zig
     /// rot.setDataRate(10);  // update every 10 ms
     /// ```
-    pub fn setDataRate(self: *Rotation, rate: u32) void {
+    pub fn setDataRate(self: *const Rotation, rate: u32) void {
         return jmptbl.rotation.vexDeviceAbsEncDataRateSet(self._handle, rate);
     }
 };

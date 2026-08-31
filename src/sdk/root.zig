@@ -49,19 +49,6 @@ pub const Init = init.Init;
 /// ```
 pub const Display = @import("display.zig").Display;
 
-/// A comptime-generic type that builds a struct of typed device handles
-/// from a user-supplied configuration.
-///
-/// ```zig
-/// const MyDevices = struct {
-///     motor_left: struct { .type = .motor },
-///     dist_front: struct { .type = .distance },
-/// };
-///
-/// const Devices = velox_sdk.Peripherals(MyDevices);
-/// ```
-pub const Peripherals = @import("Peripherals.zig");
-
 /// A `std.Io` implementation tailored for the VEX V5 Brain.
 ///
 /// Supports console I/O over serial, a single SD-card file at a time,

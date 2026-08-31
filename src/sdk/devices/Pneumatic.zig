@@ -22,22 +22,22 @@ pub const Pneumatic = struct {
     }
 
     /// Extends the pneumatic cylinder (sets output high).
-    pub fn extend(self: *Pneumatic) void {
+    pub fn extend(self: *const Pneumatic) void {
         self._adi.set(true);
     }
 
     /// Retracts the pneumatic cylinder (sets output low).
-    pub fn retract(self: *Pneumatic) void {
+    pub fn retract(self: *const Pneumatic) void {
         self._adi.set(false);
     }
 
     /// Toggles the pneumatic cylinder between extended and retracted.
-    pub fn toggle(self: *Pneumatic) void {
+    pub fn toggle(self: *const Pneumatic) void {
         self._adi.set(!self._adi.get());
     }
 
     /// Sets the pneumatic cylinder to the given state (`true` = extend, `false` = retract).
-    pub fn set(self: *Pneumatic, v: bool) void {
+    pub fn set(self: *const Pneumatic, v: bool) void {
         self._adi.set(v);
     }
 };

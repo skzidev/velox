@@ -35,18 +35,13 @@ const peripherals = @import("Peripherals.zig");
 ///     _ = try stdout.writeAll("robot ready\n");
 /// }
 /// ```
-pub fn Init(comptime devs: anytype) type {
-    return struct {
-        /// A `DebugAllocator` with thread safety enabled.
-        gpa: std.heap.DebugAllocator(.{ .thread_safe = true }),
+pub const Init = struct {
+    /// A `DebugAllocator` with thread safety enabled.
+    gpa: std.heap.DebugAllocator(.{ .thread_safe = true }),
 
-        /// An `ArenaAllocator` backed by the GPA.
-        arena: std.heap.ArenaAllocator,
+    /// An `ArenaAllocator` backed by the GPA.
+    arena: std.heap.ArenaAllocator,
 
-        /// The `std.Io` instance for this application.
-        io: std.Io,
-
-        /// Typed handles to all peripherals declared in the device config.
-        devices: peripherals.Peripherals(devs),
-    };
-}
+    /// The `std.Io` instance for this application.
+    io: std.Io,
+};

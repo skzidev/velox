@@ -64,7 +64,7 @@ pub const Distance = struct {
     /// const distance_cm = dist.distance(.centimeter);
     /// ```
     pub fn distance(
-        self: *Distance,
+        self: *const Distance,
         /// The unit for the returned distance.
         unit: units.LengthUnit,
     ) f32 {
@@ -93,7 +93,7 @@ pub const Distance = struct {
     /// }
     /// ```
     pub fn confidence(
-        self: *Distance,
+        self: *const Distance,
     ) u32 {
         return jmptbl.distance.vexDeviceDistanceConfidenceGet(self._handle);
     }
@@ -108,7 +108,7 @@ pub const Distance = struct {
     /// const size = dist.objectSize();
     /// ```
     pub fn objectSize(
-        self: *Distance,
+        self: *const Distance,
     ) i32 {
         return jmptbl.distance.vexDeviceDistanceObjectSizeGet(self._handle);
     }
@@ -126,7 +126,7 @@ pub const Distance = struct {
     /// }
     /// ```
     pub fn objectVelocity(
-        self: *Distance,
+        self: *const Distance,
     ) f64 {
         return jmptbl.distance.vexDeviceDistanceObjectVelocityGet(self._handle);
     }
