@@ -10,6 +10,7 @@ const banner = @import("banner.zig");
 const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
+const supervisor = @import("supervisor.zig");
 
 const testing = @import("testing.zig");
 const assert = testing.assert;
@@ -139,6 +140,10 @@ pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
     }
 }
 
+// The main function blocks
+// this is because autonomous code should never start until calibration of sensors is done
+var main_finished = false;
+
 // startup the rest of the runtime then call main
 export fn __velox_startup__() noreturn {
     heap_ok = false;
@@ -185,9 +190,12 @@ fn zmain() noreturn {
         banner.serialFlush();
         jmptbl.system.vexSystemExitRequest();
     };
-    // exit once main exits
-    jmptbl.system.vexSystemExitRequest();
+    main_finished = true;
     while (true) {
+        const status = jmptbl.competition.vexCompetitionStatus();
+        if (supervisor.gameStateDidUpdate(status)) {
+            supervisor.runCompStateTask(status);
+        }
         _ = jmptbl.task.vexTaskSleep(2);
     }
 }

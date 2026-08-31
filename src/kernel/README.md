@@ -8,3 +8,4 @@ This is the Velox Kernel. It contains:
 - Custom Allocator Hook
 - Custom Panic Hook
 - User code calling
+- Supervisor code

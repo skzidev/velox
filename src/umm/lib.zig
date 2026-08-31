@@ -1,3 +1,5 @@
+// This code has been altered from the original source. The original code can be found here: https://github.com/ZigEmbeddedGroup/umm-zig
+
 const std = @import("std");
 const testing = std.testing;
 

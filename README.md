@@ -35,6 +35,10 @@
 
 According to rule `<R8>` of the Override Game Manual, custom firmware modifications are not permitted. Velox is a user program. Like PROS and Vexide, it should be 100% fair game, so long as you understand what it does.
 
+## Licensing
+
+Velox's original code is licensed under the MIT license, **however, `umm-zig` is licensed under the Zlib license, and therefore `velox-umm` is licensed under Zlib as well**.
+
 ## Acknowledgements
 
 This project would not have been possible without the research from these projects and teams:
