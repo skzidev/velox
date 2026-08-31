@@ -1,5 +1,3 @@
-/* Velox linker script */
-
 ENTRY(__velox_boot__)
 
 MEMORY

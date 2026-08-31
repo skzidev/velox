@@ -18,7 +18,7 @@ pub fn runCompStateTask(status: u32) void {
 
 test "same_match_state" {
     last_game_state = 0b011;
-    try assert(gameStateDidUpdate(0b011) != true);
+    try assert(gameStateDidUpdate(0b011) == false);
 }
 
 test "different_match_state" {

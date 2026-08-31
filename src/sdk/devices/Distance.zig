@@ -21,7 +21,7 @@ const errors = @import("../error.zig");
 /// }
 /// ```
 pub const Distance = struct {
-    _handle: ?*anyopaque,
+    handle: ?*anyopaque,
 
     /// Initializes a Distance Sensor on the given port.
     ///

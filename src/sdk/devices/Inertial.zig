@@ -20,7 +20,7 @@ const pi = std.math.pi;
 /// const heading_rad = imu.heading(.radian);
 /// ```
 pub const Inertial = struct {
-    _handle: ?*anyopaque,
+    handle: ?*anyopaque,
 
     /// A quaternion representing the sensor's orientation in 3D space.
     ///

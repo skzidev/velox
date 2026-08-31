@@ -5,14 +5,14 @@ const std = @import("std");
 const jmptbl = @import("velox_jumptable");
 const builtin = @import("builtin");
 const assert = @import("testing.zig").assert;
+const manifest = @import("manifest");
 
-pub const VeloxVersionAsString = "0.0.1";
-const VeloxVersion: std.SemanticVersion = .{
-    .major = 0,
-    .minor = 0,
-    .patch = 1,
-};
-// const VeloxVersionAsString = std.fmt.comptimePrint("{d}.{d}.{d}", .{ VeloxVersion.major, VeloxVersion.minor, VeloxVersion.patch });
+fn getVersion() std.SemanticVersion {
+    return comptime try std.SemanticVersion.parse(manifest.version);
+}
+
+const VeloxVersion = getVersion();
+pub const VeloxVersionAsString = std.fmt.comptimePrint("{d}.{d}.{d}", .{ VeloxVersion.major, VeloxVersion.minor, VeloxVersion.patch });
 
 const banner = std.fmt.comptimePrint(
     \\

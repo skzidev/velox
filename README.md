@@ -53,12 +53,10 @@ Velox builds on their research into the Brain's memory model and configuration.
 
 ## Tests
 
-Tests are written in Zig's testing framework, and their results are logged over serial. Currently, only tests from the kernel are being recognized. Tests from other modules are not being recognized.
-
-Tests run inside of a custom test runner which is itself written using Velox as a program. To run them yourself:
+Tests are written in Zig's testing framework, and their results are logged over serial. They run inside of a custom test runner which is itself written using Velox as a program. To run them yourself:
 
 ```sh
-zig build run
+zig build test
 ```
 
-I am currently exploring the avenue of using this test runner with other modules, so that way user code could have tests run and we can run actual hardware tests for projects like velox-umm.
+The results are written to serial.

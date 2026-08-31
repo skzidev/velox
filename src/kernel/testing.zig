@@ -21,8 +21,10 @@ test "false_condition" {
     }
 }
 
-const umm_sym = @import("./testing/umm.zig");
-
+// don't include ./testing if this isn't a test build (it may increase binary sizes).
 comptime {
-    std.testing.refAllDecls(umm_sym);
+    if (builtin.is_test) {
+        std.testing.refAllDecls(@import("./testing/umm.zig"));
+        _ = @import("./testing/sdk.zig");
+    }
 }

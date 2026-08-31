@@ -42,9 +42,9 @@ pub const ADI = struct {
         unknown = 255,
     };
 
-    _expander: ?*anyopaque,
-    _port: u32,
-    _kind: ADIKind,
+    expander: ?*anyopaque,
+    port: u32,
+    kind: ADIKind,
 
     /// Initializes an ADI port with the specified mode.
     ///

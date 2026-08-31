@@ -12,7 +12,7 @@ const jmptbl = @import("velox_jumptable");
 /// piston.extend();
 /// ```
 pub const Pneumatic = struct {
-    _adi: adi.ADI,
+    adi: adi.ADI,
 
     /// Initializes a pneumatic solenoid on the given ADI port.
     pub fn init(port: u8, expander: u32) Pneumatic {

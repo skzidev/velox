@@ -1,6 +1,5 @@
 const std = @import("std");
 const velox = @import("velox");
-pub const ports = @import("./ports.zon");
 
 fn monitorThread(io: std.Io) !void {
     const stdout = velox.V5Io.File.stdout();

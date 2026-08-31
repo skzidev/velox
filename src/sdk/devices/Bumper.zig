@@ -16,7 +16,7 @@ const errors = @import("../error.zig");
 /// }
 /// ```
 pub const Bumper = struct {
-    _adi: adi.ADI,
+    adi: adi.ADI,
 
     /// The state of a bumper switch sensor.
     pub const BumperState = enum(c_int) {

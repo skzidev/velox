@@ -9,7 +9,7 @@ const errors = @import("../error.zig");
 /// var optical = try velox_sdk.Optical.init(7);
 /// ```
 pub const Optical = struct {
-    _handle: ?*anyopaque,
+    handle: ?*anyopaque,
 
     /// Initializes an Optical Sensor on the given port.
     pub fn init(port: u32) errors.DeviceInitError!Optical {

@@ -9,7 +9,7 @@ pub const std_options = std.Options{
 
 pub fn main(init: velox.Init) anyerror!void {
     const stdout = velox.V5Io.File.stdout();
-    //defer stdout.close(init.io);
+    defer stdout.close(init.io);
     const stderr = velox.V5Io.File.stderr();
     defer stderr.close(init.io);
     if (!builtin.is_test or !@hasDecl(builtin, "test_functions")) {
@@ -24,11 +24,11 @@ pub fn main(init: velox.Init) anyerror!void {
     var pass: u32 = 0;
     var fail: u32 = 0;
 
-    for (testFunctions, 1..) |testFunc, i| {
+    for (testFunctions) |testFunc| {
         const msg = try std.fmt.allocPrint(
             allocator,
-            "test #{d} \"{s}\"...",
-            .{ i, testFunc.name },
+            "\"{s}\"...",
+            .{testFunc.name},
         );
         try stdout.writeStreamingAll(
             init.io,

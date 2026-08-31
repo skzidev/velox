@@ -21,7 +21,7 @@ const pi = @import("std").math.pi;
 /// const rpm = rot.velocity();
 /// ```
 pub const Rotation = struct {
-    _handle: ?*anyopaque,
+    handle: ?*anyopaque,
 
     /// Initializes a Rotation Sensor on the given port.
     ///
