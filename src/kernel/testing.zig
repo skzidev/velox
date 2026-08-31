@@ -9,14 +9,20 @@ pub fn assert(cond: bool) TestErrors!void {
     if (!cond) return TestErrors.assertionFailed;
 }
 
-test "assert true statement" {
+test "true_condition" {
     if (assert(1 == 1) == TestErrors.assertionFailed) {
         return TestErrors.assertionFailed;
     }
 }
 
-test "assert false statement" {
+test "false_condition" {
     if (assert(1 == 0) != TestErrors.assertionFailed) {
         return TestErrors.assertionFailed;
     }
+}
+
+const umm_sym = @import("./testing/umm.zig");
+
+comptime {
+    std.testing.refAllDecls(umm_sym);
 }

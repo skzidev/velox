@@ -7,11 +7,9 @@ pub const std_options = std.Options{
     .page_size_min = 4096,
 };
 
-pub const ports = .{};
-
-pub fn main(init: velox.Init(ports)) anyerror!void {
+pub fn main(init: velox.Init) anyerror!void {
     const stdout = velox.V5Io.File.stdout();
-    defer stdout.close(init.io);
+    //defer stdout.close(init.io);
     const stderr = velox.V5Io.File.stderr();
     defer stderr.close(init.io);
     if (!builtin.is_test or !@hasDecl(builtin, "test_functions")) {
@@ -45,6 +43,5 @@ pub fn main(init: velox.Init(ports)) anyerror!void {
         try stdout.writeStreamingAll(init.io, "PASS\n");
         pass += 1;
     }
-
-    try stdout.writeStreamingAll(init.io, "testing done.");
+    try velox.V5Io.File.stdout().writeStreamingAll(init.io, "testing complete\n");
 }

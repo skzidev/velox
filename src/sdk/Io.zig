@@ -25,6 +25,16 @@ const jmptbl = @import("velox_jumptable");
 /// The serial channel used for console I/O
 const serial_channel: u32 = 1;
 
+/// Upper bound (in milliseconds) for waiting on the UART ring buffer to drain
+/// during `serialFlush`. Prevents an infinite busy-wait if the free-count never
+/// reports two consecutive stable samples.
+const serial_flush_timeout_ms: u32 = 100;
+
+/// Upper bound (in milliseconds) for waiting on the UART ring buffer to free
+/// space before a write in `serialWriteAll`. Prevents an infinite backpressure
+/// busy-wait when the buffer never drains.
+const serial_backpressure_timeout_ms: u32 = 100;
+
 /// The number of concurrently running tasks in the fixed task slot pool.
 const task_slots_count = 16;
 /// The alignment of the per-task context and result buffers.
@@ -181,8 +191,10 @@ fn makeStat(size: u64) std.Io.File.Stat {
 fn serialFlush() void {
     var prev_free: i32 = -1;
     var stable_samples: u32 = 0;
-    while (stable_samples < 2) {
+    var elapsed_ms: u32 = 0;
+    while (stable_samples < 2 and elapsed_ms < serial_flush_timeout_ms) {
         jmptbl.task.vexTaskSleep(1);
+        elapsed_ms += 1;
         const free = jmptbl.serial.vexSerialWriteFree(serial_channel);
         if (free == prev_free) {
             stable_samples += 1;
@@ -196,11 +208,19 @@ fn serialFlush() void {
 /// Writes `data` to the serial console, waiting for free space in the UART
 /// ring buffer as needed, then drains the ring buffer. Returns the number of
 /// bytes written.
+///
+/// Never returns before every byte has been handed to the ring buffer; if
+/// `vexSerialWriteBuffer` reports no progress (`n == 0`) it retries for up to
+/// `serial_backpressure_timeout_ms` and only then gives up with
+/// `error.InputOutput`. This prevents `writeStreamingAll` from looping forever
+/// when the ring buffer stays full.
 fn serialWriteAll(data: []const u8) error{InputOutput}!usize {
     var written: usize = 0;
+    var wait_ms: u32 = 0;
     while (written < data.len) {
-        while (jmptbl.serial.vexSerialWriteFree(serial_channel) <= 0) {
-            jmptbl.task.vexTaskYield();
+        while (jmptbl.serial.vexSerialWriteFree(serial_channel) <= 0 and wait_ms < serial_backpressure_timeout_ms) {
+            jmptbl.task.vexTaskSleep(1);
+            wait_ms += 1;
         }
         const n = jmptbl.serial.vexSerialWriteBuffer(
             serial_channel,
@@ -208,8 +228,15 @@ fn serialWriteAll(data: []const u8) error{InputOutput}!usize {
             @intCast(data.len - written),
         );
         if (n < 0) return error.InputOutput;
-        if (n == 0) return written;
-        written += @intCast(n);
+        if (n > 0) {
+            written += @intCast(n);
+            continue;
+        }
+        // n == 0: nothing was accepted. Retry for a bit; bail out with an
+        // error rather than returning partial and looping forever upstream.
+        if (wait_ms >= serial_backpressure_timeout_ms) return error.InputOutput;
+        jmptbl.task.vexTaskSleep(1);
+        wait_ms += 1;
     }
     serialFlush();
     return written;

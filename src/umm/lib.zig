@@ -435,14 +435,21 @@ const FreeOrder = enum {
     reversed,
     random,
 };
+
+// Storage pool used by the heap tests. Kept in `.bss` (static) rather than on
+// the task stack because it is far larger than the default VEX V5 task stack
+// (~2 KB); a 256 KB stack local would overflow it. Tests run serially, so all
+// the heap tests share this one pool safely (each `Umm.init` fully reinitializes
+// it and `deinit` runs before the next test starts).
+var test_pool: [std.math.maxInt(u15) * 8]u8 align(16) = undefined;
+
 fn umm_test_type(comptime T: type, comptime free_order: FreeOrder) !void {
     const Umm = UmmAllocator(.{});
-    var buf: [std.math.maxInt(u15) * 8]u8 align(16) = undefined;
-    var umm = try Umm.init(&buf);
+    var umm = try Umm.init(&test_pool);
     defer std.testing.expect(umm.deinit() == .ok) catch @panic("leak");
     const allocator = umm.allocator();
 
-    const gpa = if (@import("builtin").is_test) testing.allocator else std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     var list = std.ArrayList(*T).empty;
     defer list.deinit(gpa);
 
@@ -479,33 +486,33 @@ fn umm_test_type(comptime T: type, comptime free_order: FreeOrder) !void {
     }
 }
 
-test "u16 allocations - free in same order" {
+test "free_16_in_same_order" {
     try umm_test_type(u16, .normal);
 }
-test "u16 allocations - free in reverse order" {
+test "free_u16_in_reverse" {
     try umm_test_type(u16, .reversed);
 }
-test "u16 allocations - free in random order" {
+test "free_u16_randomly" {
     try umm_test_type(u16, .random);
 }
 
-test "u32 allocations - free in same order" {
+test "free_u32_in_same_order" {
     try umm_test_type(u32, .normal);
 }
-test "u32 allocations - free in reverse order" {
+test "free_u32_in_reverse" {
     try umm_test_type(u32, .reversed);
 }
-test "u32 allocations - free in random order" {
+test "free_u32_randomly" {
     try umm_test_type(u32, .random);
 }
 
-test "u64 allocations - free in same order" {
+test "free_u64_in_same_order" {
     try umm_test_type(u64, .normal);
 }
-test "u64 allocations - free in reverse order" {
+test "free_u64_in_reverse" {
     try umm_test_type(u64, .reversed);
 }
-test "u64 allocations - free in random order" {
+test "free_u64_randomly" {
     try umm_test_type(u64, .random);
 }
 
@@ -514,24 +521,23 @@ const Foo = struct {
     b: u32,
     c: u64,
 };
-test "Foo allocations - free in same order" {
+test "free_structs_in_order" {
     try umm_test_type(Foo, .normal);
 }
-test "Foo allocations - free in reverse order" {
+test "free_structs_in_reverse" {
     try umm_test_type(Foo, .reversed);
 }
-test "Foo allocations - free in random order" {
+test "free_structs_randomly" {
     try umm_test_type(Foo, .random);
 }
 
 fn umm_test_random_size(comptime free_order: FreeOrder) !void {
     const Umm = UmmAllocator(.{});
-    var buf: [std.math.maxInt(u15) * 8]u8 align(16) = undefined;
-    var umm = try Umm.init(&buf);
+    var umm = try Umm.init(&test_pool);
     defer std.testing.expect(umm.deinit() == .ok) catch @panic("leak");
     const allocator = umm.allocator();
 
-    const gpa = if (@import("builtin").is_test) testing.allocator else std.heap.page_allocator;
+    const gpa = std.heap.page_allocator;
     var list = std.ArrayList([]u8).empty;
     defer list.deinit(gpa);
 
@@ -569,13 +575,13 @@ fn umm_test_random_size(comptime free_order: FreeOrder) !void {
     }
 }
 
-test "random size allocations - free in same order" {
+test "free_random_allocations_in_order" {
     try umm_test_random_size(.normal);
 }
-test "random size allocations - free in reverse order" {
+test "free_random_allocations_in_reverse" {
     try umm_test_random_size(.reversed);
 }
-test "random size allocations - free in random order" {
+test "free_random_allocations_randomly" {
     try umm_test_random_size(.random);
 }
 

@@ -20,10 +20,9 @@ pub fn validateUserProgram(comptime mod: anytype) void {
     }
 }
 
-test "ensure code validation works" {
+test "valid_program" {
     const exampleModule = struct {
-        pub const ports = .{};
-        pub fn main(_: sdk.Init(ports)) !void {}
+        pub fn main(_: sdk.Init) !void {}
     };
     comptime validateUserProgram(exampleModule);
 }

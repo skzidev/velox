@@ -41,8 +41,11 @@ pub fn printBanner() void {
 pub fn serialFlush() void {
     var prev_free: i32 = -1;
     var stable_samples: u32 = 0;
-    while (stable_samples < 2) {
+    var elapsed_ms: u32 = 0;
+    const timeout_ms: u32 = 100;
+    while (stable_samples < 2 and elapsed_ms < timeout_ms) {
         jmptbl.task.vexTaskSleep(1);
+        elapsed_ms += 1;
         const free = jmptbl.serial.vexSerialWriteFree(1);
         if (free == prev_free) {
             stable_samples += 1;
@@ -53,7 +56,7 @@ pub fn serialFlush() void {
     }
 }
 
-test "ensure banner is correct" {
+test "banner_content" {
     try assert(std.mem.containsAtLeast(u8, banner, 1, "Is a test runner"));
     try assert(std.mem.containsAtLeast(u8, banner, 1, "Compiled for cortex_a9"));
     try assert(std.mem.containsAtLeast(u8, banner, 1, "Velox v" ++ VeloxVersionAsString));
