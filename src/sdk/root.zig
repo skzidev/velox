@@ -156,3 +156,5 @@ pub const Pneumatic = pneumatic.Pneumatic;
 ///
 /// Provides access to button state and joystick axis values.
 pub const Controller = controller.Controller;
+
+pub const Competition = @import("comp.zig").Competition;

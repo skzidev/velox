@@ -39,11 +39,12 @@ fn getVeloxModules(b: *std.Build, optimize: std.builtin.OptimizeMode) VeloxModul
     velox.addImport("velox_sdk", sdk);
     velox.addImport("velox_umm", umm);
     velox.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
-    velox.addAnonymousImport("manifest", .{
+    const manifest = b.createModule(.{
         .root_source_file = b.path("build.zig.zon"),
         .optimize = optimize,
         .target = target,
     });
+    velox.addImport("manifest", manifest);
     sdk.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
 
     return .{

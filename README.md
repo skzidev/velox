@@ -4,7 +4,7 @@
 
 <h1 align="center">Velox</h1>
 
-<p align="center"><strong>A Zig platform for VEX V5.</strong></p>
+<p align="center"><strong>Open Source Zig Framework for VEX V5.</strong></p>
 
 > [!WARNING]
 > Velox has not hit alpha yet. It can boot on the brain, allocate memory, render graphics, and call VEX SDK bindings, but competition and device APIs are being developed.
@@ -16,7 +16,6 @@
 - [x] Panic handler with stack traces
 - [x] Jumptable integration
 - [ ] Device Drivers
-- [ ] Odometry, Control, & Localization Library
 - [ ] Custom Uploader program
 - [ ] GUI library (Potentially written on top of a library like [Knots](https://codeberg.org/shahwali/knots))
 

@@ -10,7 +10,6 @@ const banner = @import("banner.zig");
 const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
-const supervisor = @import("supervisor.zig");
 
 const testing = @import("testing.zig");
 const assert = testing.assert;
@@ -30,14 +29,11 @@ pub const std_options = std.Options{
 // don't compile an invalid user program
 comptime {
     validation.validateUserProgram(user_code);
-    // force the exception handler modules to be analyzed so their assembly
-    // stubs actually make it into the binary.
+
     _ = @import("handlers/fault.zig");
     _ = @import("handlers/irq.zig");
     _ = @import("handlers/fiq.zig");
     _ = @import("handlers/svc.zig");
-    // recognize umm tests
-    std.testing.refAllDecls(umm);
 }
 
 const VeloxHeader = extern struct {
@@ -192,10 +188,6 @@ fn zmain() noreturn {
     };
     main_finished = true;
     while (true) {
-        const status = jmptbl.competition.vexCompetitionStatus();
-        if (supervisor.gameStateDidUpdate(status)) {
-            supervisor.runCompStateTask(status);
-        }
         _ = jmptbl.task.vexTaskSleep(2);
     }
 }

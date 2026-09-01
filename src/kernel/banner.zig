@@ -27,12 +27,16 @@ const banner = std.fmt.comptimePrint(
     \\                / /                   |
     \\                |/                    | Copyright (c) 2026 59218C, licensed under MIT.
     \\
-, .{ VeloxVersionAsString, builtin.zig_version_string, builtin.target.cpu.model.name, if (builtin.target.cpu.features.isEnabled(@intFromEnum(std.Target.arm.Feature.neon))) "enabled" else "disabled", switch (builtin.mode) {
-    .Debug => "Debug",
-    .ReleaseFast => "Release (speed)",
-    .ReleaseSafe => "Release (safe)",
-    .ReleaseSmall => "Release (small)",
-}, if (builtin.is_test) "Is" else "Is Not" });
+, .{
+    VeloxVersionAsString,                    builtin.zig_version_string, builtin.target.cpu.model.name, if (builtin.target.cpu.features.isEnabled(@intFromEnum(std.Target.arm.Feature.neon))) "enabled" else "disabled",
+    switch (builtin.mode) {
+        .Debug => "Debug",
+        .ReleaseFast => "Release (speed)",
+        .ReleaseSafe => "Release (safe)",
+        .ReleaseSmall => "Release (small)",
+    },
+    if (builtin.is_test) "Is" else "Is Not",
+});
 
 pub fn printBanner() void {
     _ = jmptbl.serial.vexSerialWriteBuffer(1, @constCast(banner), banner.len);

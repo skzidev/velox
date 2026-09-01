@@ -8,6 +8,14 @@ fn monitorThread(io: std.Io) !void {
     }
 }
 
+pub fn teleop() void {
+    //
+}
+
+pub fn auton() void {
+    //
+}
+
 pub fn main(init: velox.Init) !void {
     const motor = try velox.Motor.init(5, .blue, .forward, .coast);
     motor.spinAt(100, .rpm);
