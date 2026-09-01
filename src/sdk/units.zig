@@ -6,15 +6,22 @@
 /// | Variant | Meaning |
 /// |---|---|
 /// | `.rpm` | Revolutions per minute |
-/// | `.volts` | Voltage in millivolts (V5 range: -12000 to 12000) |
+/// | `.mvolts` | Voltage in millivolts (V5 range: -12000 to 12000) |
+/// | `.volts` | Voltage in volts (V5 range: -12.0 to 12.0) |
 /// | `.percent` | Percentage of max speed (-100 to 100) |
 pub const MotorUnit = enum {
-    /// Revolutions per minute. The motor will attempt to hold this speed.
+    /// Revolutions per minute. The motor will attempt to hold this speed
+    /// using its internal PID controller.
     rpm,
-    /// Voltage in millivolts. The V5 motor accepts values from -12000 to
-    /// 12000 mV.
+    /// Voltage in millivolts. The V5 motor accepts integer values from
+    /// -12000 to 12000 mV.
     mvolts,
-    /// Percentage of maximum speed. Range: -100 to 100.
+    /// Voltage in volts. The V5 motor accepts values from -12.0 to 12.0 V.
+    /// Internally converted to millivolts (`volts * 1000`) before being
+    /// sent to the hardware.
+    volts,
+    /// Percentage of maximum speed. Range: -100 to 100. Internally
+    /// converted to millivolts before being sent to the hardware.
     percent,
 };
 

@@ -1,3 +1,13 @@
+//! # On-Hardware Test Runner
+//!
+//! This is the user program for the test executable. It iterates over
+//! all Zig test functions (available via `builtin.test_functions`),
+//! runs each one, and prints `PASS` or `FAIL` to the serial console.
+//!
+//! The test runner is built using `runner/shim.zig` as the test runner
+//! shim, which provides a minimal `page_allocator` and empty `panic`
+//! handler for on-hardware execution.
+
 const builtin = @import("builtin");
 const std = @import("std");
 const velox = @import("velox");
@@ -7,6 +17,11 @@ pub const std_options = std.Options{
     .page_size_min = 4096,
 };
 
+/// Entry point for the test runner. Must be compiled in test mode.
+///
+/// Iterates over all registered test functions, executes each one,
+/// and writes the result (`PASS` or `FAIL`) to serial. Prints a
+/// summary line when all tests complete.
 pub fn main(init: velox.Init) anyerror!void {
     const stdout = velox.V5Io.File.stdout();
     defer stdout.close(init.io);

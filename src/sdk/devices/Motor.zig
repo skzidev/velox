@@ -12,7 +12,7 @@ const pi = @import("std").math.pi;
 ///
 /// | Method | Description |
 /// |---|---|
-/// | [`spinAt`] | Set motor speed in RPM, voltage, or percent |
+/// | [`spinAt`] | Set motor speed in RPM, mvolts, volts, or percent |
 /// | [`temp`] | Read motor temperature |
 /// | [`isOverheating`] | Check if the motor is overheating |
 /// | [`setBrakingMode`] | Set coast / brake / hold mode |
@@ -95,7 +95,7 @@ pub const Motor = struct {
 
     /// Spins the motor at the given speed in the specified units.
     ///
-    /// The sign of `scalar` controls direction: positive values spin
+    /// The sign of `speed` controls direction: positive values spin
     /// forward (unless the motor is reversed), negative values spin
     /// backward.
     ///
@@ -104,8 +104,10 @@ pub const Motor = struct {
     /// - `.rpm` — target speed in revolutions per minute. The motor uses
     ///   its internal PID to hold this speed.
     /// - `.mvolts` — voltage in millivolts (range: -12000 to 12000).
+    /// - `.volts` — voltage in volts (range: -12.0 to 12.0). Internally
+    ///   converted to millivolts (`volts * 1000`).
     /// - `.percent` — percentage of maximum speed (-100 to 100). Internally
-    ///   converted to voltage.
+    ///   converted to millivolts.
     ///
     /// ## Example
     ///
@@ -113,6 +115,7 @@ pub const Motor = struct {
     /// motor.spinAt(200, .rpm);       // 200 RPM forward
     /// motor.spinAt(-100, .percent);  // 100% reverse
     /// motor.spinAt(12000, .mvolts);   // full voltage forward
+    /// motor.spinAt(6, .volts);       // 6 volts forward
     /// ```
     pub fn spinAt(
         self: *const Motor,
@@ -127,6 +130,9 @@ pub const Motor = struct {
             },
             .mvolts => {
                 jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, speed);
+            },
+            .volts => {
+                jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, speed * 1000);
             },
             .percent => {
                 jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, @divTrunc((speed * 127), 100));
@@ -160,7 +166,7 @@ pub const Motor = struct {
             return errors.DeviceInitError.InvalidPortError;
         const handle = jmptbl.devices.vexDeviceGetByIndex(port - 1);
         jmptbl.motor.vexDeviceMotorGearingSet(handle, @enumFromInt(@intFromEnum(cart)));
-        jmptbl.motor.vexDeviceMotorReverseFlagSet(handle, @intFromEnum(dir));
+        jmptbl.motor.vexDeviceMotorReverseFlagSet(handle, if (dir == .reverse) 1 else 0);
         jmptbl.motor.vexDeviceMotorBrakeModeSet(handle, @enumFromInt(@intFromEnum(braking)));
         return Motor{
             .handle = handle,

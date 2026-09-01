@@ -1,3 +1,23 @@
+//! # Vector Base Address Register (VBAR)
+//!
+//! Defines the ARM exception vector table and installs it into the
+//! VBAR (CP15 c12). The vector table contains 8 entries, each
+//! corresponding to an ARM exception type:
+//!
+//! | Offset | Exception | Handler |
+//! |--------|-----------|---------|
+//! | 0x00 | Reset | `vexSystemBoot` (VEXos) |
+//! | 0x04 | Undefined Instruction | `fault_handler_undef` |
+//! | 0x08 | SVC (Supervisor Call) | `svc_handler` |
+//! | 0x0C | Prefetch Abort | `fault_handler_pabort` |
+//! | 0x10 | Data Abort | `fault_handler_dabort` |
+//! | 0x14 | Reserved | NOP |
+//! | 0x18 | IRQ | `irq_handler` |
+//! | 0x1C | FIQ | `fiq_handler` |
+//!
+//! The table is placed in the `.vectors` section and must be 32-byte
+//! aligned.
+
 comptime {
     asm (
         \\.section .vectors, "ax"
@@ -21,8 +41,15 @@ comptime {
     );
 }
 
+/// Reference to the vector table in the `.vectors` section.
 extern var vector_table: u8;
 
+/// Installs the exception vector table by writing the address of
+/// [`vector_table`] into the ARM VBAR register (CP15 c12).
+///
+/// Performs a `dsb` before and an `isb` after the `mcr` to ensure
+/// the memory barrier is respected and the instruction pipeline is
+/// flushed.
 pub fn install_vectors() void {
     asm volatile ("dsb" ::: .{ .memory = true });
 

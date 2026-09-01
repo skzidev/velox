@@ -1,3 +1,24 @@
+/* Velox Linker Script for the VEX V5 Brain
+ *
+ * Memory layout for user programs running on the VEX V5 Brain's
+ * ARM Cortex-A9 dual-core processor.
+ *
+ * USER_RAM starts at 0x03800000 with a length of 0x04800000 (72 MB).
+ * The entry point is __velox_boot__ (defined in boot.zig).
+ *
+ * Stack sizes:
+ *   - Main stack:  128 KB (normal program execution)
+ *   - Abort stack:  16 KB (fault handler, used when main stack may be corrupt)
+ *   - IRQ stack:     8 KB (hardware interrupt handler, banked)
+ *   - FIQ stack:     8 KB (fast interrupt handler, banked)
+ *
+ * The heap occupies all remaining RAM from __heap_start to the end of
+ * USER_RAM (0x07FFFFFF).
+ *
+ * ARM unwind metadata (.ARM.exidx, .ARM.extab) and C++ exception
+ * frames (.eh_frame) are discarded since Velox does not use them.
+ */
+
 ENTRY(__velox_boot__)
 
 MEMORY
