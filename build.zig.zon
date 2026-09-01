@@ -1,6 +1,6 @@
 .{
     .name = .velox_core,
-    .version = "0.0.1",
+    .version = "0.1.0",
     .fingerprint = 0xe3685d5fe413aa55,
     .dependencies = .{
         .velox_jumptable = .{

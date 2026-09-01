@@ -13,7 +13,7 @@ pub const MotorUnit = enum {
     rpm,
     /// Voltage in millivolts. The V5 motor accepts values from -12000 to
     /// 12000 mV.
-    volts,
+    mvolts,
     /// Percentage of maximum speed. Range: -100 to 100.
     percent,
 };

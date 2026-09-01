@@ -103,7 +103,7 @@ pub const Motor = struct {
     ///
     /// - `.rpm` — target speed in revolutions per minute. The motor uses
     ///   its internal PID to hold this speed.
-    /// - `.volts` — voltage in millivolts (range: -12000 to 12000).
+    /// - `.mvolts` — voltage in millivolts (range: -12000 to 12000).
     /// - `.percent` — percentage of maximum speed (-100 to 100). Internally
     ///   converted to voltage.
     ///
@@ -112,7 +112,7 @@ pub const Motor = struct {
     /// ```zig
     /// motor.spinAt(200, .rpm);       // 200 RPM forward
     /// motor.spinAt(-100, .percent);  // 100% reverse
-    /// motor.spinAt(12000, .volts);   // full voltage forward
+    /// motor.spinAt(12000, .mvolts);   // full voltage forward
     /// ```
     pub fn spinAt(
         self: *const Motor,
@@ -125,7 +125,7 @@ pub const Motor = struct {
             .rpm => {
                 jmptbl.motor.vexDeviceMotorVelocitySet(self.handle, speed);
             },
-            .volts => {
+            .mvolts => {
                 jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, speed);
             },
             .percent => {
@@ -310,7 +310,7 @@ pub const Motor = struct {
     pub fn spinToPos(self: *const Motor, position: f64, posUnit: units.RotationalUnit, speed: i32) void {
         const posInDeg = switch (posUnit) {
             .degree => position,
-            .radian => position * (180 / pi),
+            .radian => position * @divTrunc(180, pi),
             .turn => position / 360,
         };
         jmptbl.motor.vexDeviceMotorAbsoluteTargetSet(self.handle, posInDeg, speed);

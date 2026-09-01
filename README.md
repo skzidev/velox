@@ -6,16 +6,11 @@
 
 <p align="center"><strong>Open Source Zig Framework for VEX V5.</strong></p>
 
-> [!WARNING]
-> Velox has not hit alpha yet. It can boot on the brain, allocate memory, render graphics, and call VEX SDK bindings, but competition and device APIs are being developed.
-
 <p align="center">
-
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/skzidev/velox/build.yml?style=for-the-badge)
-![GitHub License](https://img.shields.io/github/license/skzidev/velox?style=for-the-badge)
-![Zig support](https://img.shields.io/badge/Zig-0.16.0-color?logo=zig&color=%23f3ab20&style=for-the-badge)
-![Velox Version](<https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fskzidev%2Fvelox%2Frefs%2Fheads%2Fmain%2Fbuild.zig.zon&search=%5C.version%20%3D%20%22(%5Cd%5C.%5Cd%5C.%5Cd)%22&replace=%241&style=for-the-badge&label=Version>)
-
+  <img src="https://img.shields.io/github/actions/workflow/status/skzidev/velox/build.yml?style=for-the-badge" alt="GitHub Actions Workflow Status">
+  <img src="https://img.shields.io/github/license/skzidev/velox?style=for-the-badge" alt="GitHub License">
+  <img src="https://img.shields.io/badge/Zig-0.16.0-color?logo=zig&color=%23f3ab20&style=for-the-badge" alt="Zig support">
+  <img src="https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fskzidev%2Fvelox%2Frefs%2Fheads%2Fmain%2Fbuild.zig.zon&search=%5C.version%20%3D%20%22(%5Cd%5C.%5Cd%5C.%5Cd)%22&replace=%241&style=for-the-badge&label=Version" alt="Velox Version">
 </p>
 
 ## Roadmap
@@ -38,6 +33,7 @@
 - [Kernel](./src/kernel/README.md)
 - [SDK](./src/sdk/README.md)
 - [Umm](./src/umm/README.md)
+- [Jumptable](https://github.com/skzidev/velox-jumptable)
 
 ## Competition Legality
 
