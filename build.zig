@@ -7,14 +7,14 @@ const VeloxModules = struct {
     jumptable: *std.Build.Dependency,
 };
 
-fn generateLinkerScript(b: *std.Build, jumptable: *std.Build.Dependency) !std.Build.LazyPath {
+fn generateLinkerScript(b: *std.Build, velox_root: std.Build.LazyPath, jumptable: *std.Build.Dependency) !std.Build.LazyPath {
     // initialize IO for linker script read
     var threaded: std.Io.Threaded = .init_single_threaded;
     const io = threaded.io();
     defer threaded.deinit();
 
     // read the linker scripts into ls1 (velox) and ls2 (jumptable)
-    const veloxLinkerScript = try std.Io.Dir.cwd().openFile(io, "linker.ld", .{ .mode = .read_only });
+    const veloxLinkerScript = try std.Io.Dir.cwd().openFile(io, velox_root.path(b, "linker.ld").getPath(b), .{ .mode = .read_only });
     const jmptblLinkerScript = try std.Io.Dir.cwd().openFile(io, jumptable.path("addrs.ld").getPath(b), .{ .mode = .read_only });
     const ls1 = try b.allocator.alloc(u8, try veloxLinkerScript.length(io));
     const ls2 = try b.allocator.alloc(u8, try jmptblLinkerScript.length(io));
@@ -28,19 +28,19 @@ fn generateLinkerScript(b: *std.Build, jumptable: *std.Build.Dependency) !std.Bu
     return ls.add("ls.ld", b.fmt("{s}\n{s}", .{ ls1, ls2 }));
 }
 
-fn getVeloxModules(b: *std.Build, optimize: std.builtin.OptimizeMode) VeloxModules {
+fn getVeloxModules(b: *std.Build, optimize: std.builtin.OptimizeMode, velox_root: std.Build.LazyPath) VeloxModules {
     const target = getV5Target(b);
 
-    const velox = b.createModule(.{ .root_source_file = b.path("./src/kernel/boot.zig"), .target = target, .optimize = optimize });
-    const umm = b.createModule(.{ .root_source_file = b.path("./src/umm/lib.zig"), .target = target, .optimize = optimize });
-    const sdk = b.addModule("velox_sdk", .{ .root_source_file = b.path("./src/sdk/root.zig"), .target = target, .optimize = optimize });
+    const velox = b.addModule("velox_core", .{ .root_source_file = velox_root.path(b, "src/kernel/boot.zig"), .target = target, .optimize = optimize });
+    const umm = b.createModule(.{ .root_source_file = velox_root.path(b, "src/umm/lib.zig"), .target = target, .optimize = optimize });
+    const sdk = b.addModule("velox_sdk", .{ .root_source_file = velox_root.path(b, "src/sdk/root.zig"), .target = target, .optimize = optimize });
     const jumptable = b.dependency("velox_jumptable", .{});
 
     velox.addImport("velox_sdk", sdk);
     velox.addImport("velox_umm", umm);
     velox.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
     const manifest = b.createModule(.{
-        .root_source_file = b.path("build.zig.zon"),
+        .root_source_file = velox_root.path(b, "build.zig.zon"),
         .optimize = optimize,
         .target = target,
     });
@@ -59,8 +59,10 @@ pub fn addExecutable(
     b: *std.Build,
     code_root: std.Build.LazyPath,
     optimize: std.builtin.OptimizeMode,
+    velox_root: std.Build.LazyPath,
+    user_imports: []const std.Build.Module.Import,
 ) !*std.Build.Step.Compile {
-    const veloxModules = getVeloxModules(b, optimize);
+    const veloxModules = getVeloxModules(b, optimize, velox_root);
     const velox = veloxModules.core;
     const sdk = veloxModules.sdk;
     const jumptable = veloxModules.jumptable;
@@ -73,6 +75,10 @@ pub fn addExecutable(
     velox.addImport("user_code", user_code);
 
     user_code.addImport("velox", sdk);
+    for (user_imports) |imp| {
+        imp.module.addImport("velox", velox);
+        user_code.addImport(imp.name, imp.module);
+    }
 
     const exe = b.addExecutable(.{
         .root_module = velox,
@@ -81,7 +87,7 @@ pub fn addExecutable(
     });
     exe.entry = .{ .symbol_name = "__velox_boot__" };
 
-    const ls = try generateLinkerScript(b, jumptable);
+    const ls = try generateLinkerScript(b, velox_root, jumptable);
     exe.setLinkerScript(ls);
 
     b.installArtifact(exe);
@@ -192,12 +198,12 @@ fn getV5Target(b: *std.Build) std.Build.ResolvedTarget {
     });
 }
 
-fn createTests(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.Step.Compile {
-    const veloxModules = getVeloxModules(b, optimize);
+fn createTests(b: *std.Build, optimize: std.builtin.OptimizeMode, velox_root: std.Build.LazyPath) !*std.Build.Step.Compile {
+    const veloxModules = getVeloxModules(b, optimize, velox_root);
     const velox = veloxModules.core;
 
     const runnerModule = b.createModule(.{
-        .root_source_file = b.path("./runner/runner.zig"),
+        .root_source_file = velox_root.path(b, "runner/runner.zig"),
         .optimize = optimize,
         .target = getV5Target(b),
     });
@@ -208,14 +214,14 @@ fn createTests(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.St
     const testing = b.addTest(.{
         .root_module = velox,
         .test_runner = .{
-            .path = b.path("runner/shim.zig"),
+            .path = velox_root.path(b, "runner/shim.zig"),
             .mode = .simple,
         },
     });
 
     testing.entry = .{ .symbol_name = "__velox_boot__" };
 
-    const ls = try generateLinkerScript(b, veloxModules.jumptable);
+    const ls = try generateLinkerScript(b, velox_root, veloxModules.jumptable);
     testing.setLinkerScript(ls);
 
     return testing;
@@ -224,7 +230,9 @@ fn createTests(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.St
 pub fn build(b: *std.Build) !void {
     const optimize = std.Build.standardOptimizeOption(b, .{});
 
-    const exe = try addExecutable(b, b.path("mock/user_code.zig"), optimize);
+    const velox_root = b.path(".");
+
+    const exe = try addExecutable(b, b.path("mock/user_code.zig"), optimize, velox_root, &.{});
     b.default_step.dependOn(&exe.step);
 
     const upload = b.step("upload", "Upload the kernel to the brain");
@@ -233,7 +241,7 @@ pub fn build(b: *std.Build) !void {
     upload.dependOn(&cmd.step);
 
     const testgen = b.step("test", "Build a test runner and upload it to the brain");
-    const testing = try createTests(b, optimize);
+    const testing = try createTests(b, optimize, velox_root);
     const uploadTest = try addUpload(b, testing, "Velox Tests", "Tests for the Velox Runtime", .code_file, 8);
     testgen.dependOn(&testing.step);
     testgen.dependOn(&uploadTest.step);
