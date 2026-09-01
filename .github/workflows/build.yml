@@ -1,4 +1,5 @@
 name: build
+
 on:
   push:
     branches: ["main"]
@@ -7,9 +8,59 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Build and Test
+    name: Build
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: mlugg/setup-zig@v2
-      - run: zig build
-      - run: zig fmt src
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Zig Compiler
+        uses: mlugg/setup-zig@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up ZLint
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/DonIsaac/zlint/refs/heads/main/tasks/install.sh | bash
+
+      - name: Build
+        id: build
+        continue-on-error: true
+        run: |
+          zig build > build_output.txt 2>&1
+
+      - name: Check Formatting
+        id: format
+        continue-on-error: true
+        run: |
+          zig fmt --check src/ mock/ runner/ > format_output.txt 2>&1
+
+      - name: Run Linter
+        id: lint
+        continue-on-error: true
+        run: |
+          zlint > linter_output.txt 2>&1
+
+      - name: Generate Summary
+        env:
+          BUILD_OK: ${{ steps.build.outcome == 'success' }}
+          FORMAT_OK: ${{ steps.format.outcome == 'success' }}
+          LINT_OK: ${{ steps.lint.outcome == 'success' }}
+        run: python .github/scripts/summary.py
+
+      - name: Fail if checks failed
+        if: |
+          steps.build.outcome == 'failure' ||
+          steps.format.outcome == 'failure' ||
+          steps.lint.outcome == 'failure'
+        run: exit 1
+
+      - name: Upload Build Artifacts
+        if: steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build Artifact
+          path: zig-out/bin/velox

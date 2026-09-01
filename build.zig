@@ -82,8 +82,9 @@ pub fn addExecutable(
     exe.entry = .{ .symbol_name = "__velox_boot__" };
 
     const ls = try generateLinkerScript(b, jumptable);
-
     exe.setLinkerScript(ls);
+
+    b.installArtifact(exe);
 
     return exe;
 }
