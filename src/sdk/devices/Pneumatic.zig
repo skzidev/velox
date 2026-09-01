@@ -1,5 +1,4 @@
 const adi = @import("ADI.zig");
-const jmptbl = @import("velox_jumptable");
 
 /// A VEX pneumatic solenoid, connected via an ADI digital output port.
 ///

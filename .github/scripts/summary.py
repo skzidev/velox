@@ -44,10 +44,14 @@ summary = f"""# Build Summary
 ```
 
 ## Formatter
+```
 {format_output}
+```
 
 ## Linter
+```
 {lint_output}
+```
 """
 
 summary_file = os.environ.get("GITHUB_STEP_SUMMARY")

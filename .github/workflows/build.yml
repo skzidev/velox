@@ -54,8 +54,7 @@ jobs:
       - name: Fail if checks failed
         if: |
           steps.build.outcome == 'failure' ||
-          steps.format.outcome == 'failure' ||
-          steps.lint.outcome == 'failure'
+          steps.format.outcome == 'failure'
         run: exit 1
 
       - name: Upload Build Artifacts

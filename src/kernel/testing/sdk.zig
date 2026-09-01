@@ -1,6 +1,5 @@
 const sdk = @import("velox_sdk");
 const assert = @import("../testing.zig").assert;
-const std = @import("std");
 
 var didRunConcurrently = false;
 

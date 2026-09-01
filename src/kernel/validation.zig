@@ -1,5 +1,4 @@
 //! User program validation
-const std = @import("std");
 const sdk = @import("velox_sdk");
 
 /// Ensures that the user program provides all of the things which it needs to (main and ports)

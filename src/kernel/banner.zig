@@ -7,11 +7,13 @@ const builtin = @import("builtin");
 const assert = @import("testing.zig").assert;
 const manifest = @import("manifest");
 
-fn getVersion() std.SemanticVersion {
+fn getVersion() !std.SemanticVersion {
     return comptime try std.SemanticVersion.parse(manifest.version);
 }
 
-const VeloxVersion = getVersion();
+const VeloxVersion = getVersion() catch {
+    @compileError("Cannot retrieve version from build.zig.zon");
+};
 pub const VeloxVersionAsString = std.fmt.comptimePrint("{d}.{d}.{d}", .{ VeloxVersion.major, VeloxVersion.minor, VeloxVersion.patch });
 
 const banner = std.fmt.comptimePrint(

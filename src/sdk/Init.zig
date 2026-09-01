@@ -1,5 +1,4 @@
 const std = @import("std");
-const peripherals = @import("Peripherals.zig");
 
 /// The "Juicy Main" — the entry point for all Velox user programs.
 ///

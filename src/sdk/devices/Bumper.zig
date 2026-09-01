@@ -1,4 +1,3 @@
-const jmptbl = @import("velox_jumptable");
 const adi = @import("./ADI.zig");
 const errors = @import("../error.zig");
 

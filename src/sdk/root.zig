@@ -28,10 +28,8 @@
 //! ```
 //!
 
-const std = @import("std");
 const io = @import("./Io.zig");
 const init = @import("Init.zig");
-const comp = @import("./comp.zig");
 const controller = @import("controller.zig");
 
 /// The "Juicy Main" init type — the entry point for all Velox user programs.
@@ -71,7 +69,6 @@ const bumper = @import("devices/Bumper.zig");
 const rotational = @import("devices/Rotation.zig");
 const inertial = @import("devices/Inertial.zig");
 const pneumatic = @import("devices/Pneumatic.zig");
-const optical = @import("devices/Optical.zig");
 
 /// A VEX V5 Smart Motor (both 11 W and 5.5 W variants).
 ///

@@ -19,6 +19,8 @@
 //!
 //! Everything else is stubbed to `std.Io.failing*`.
 
+// zlint-disable unsafe-undefined
+
 const std = @import("std");
 const jmptbl = @import("velox_jumptable");
 

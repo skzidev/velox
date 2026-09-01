@@ -5,7 +5,7 @@ const std = @import("std");
 
 // TODO design and implement competition interface
 //
-fn supervisor(io: std.Io, callbacks: Competition.MatchStateCallbacks) void {
+fn supervisor(io: std.Io, callbacks: Competition.MatchStateCallbacks) !void {
     var runningFunctionState = Competition.CompetitionState.Disabled;
     var runningFunction: std.Io.Future(void) = null;
     while (true) {

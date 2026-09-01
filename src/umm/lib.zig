@@ -104,7 +104,7 @@ pub fn UmmAllocator(comptime config: Config) type {
 
         fn alloc(ctx: *anyopaque, len: usize, alignment: std.mem.Alignment, ret_addr: usize) ?[*]u8 {
             _ = ret_addr;
-            const self = @as(*Self, @ptrCast(@alignCast(ctx)));
+            const self: *Self = @ptrCast(@alignCast(ctx));
 
             var target_blocks_count = Block.calculate_number_of_blocks(len);
 
@@ -184,7 +184,7 @@ pub fn UmmAllocator(comptime config: Config) type {
         }
 
         fn resize(ctx: *anyopaque, buf: []u8, alignment: std.mem.Alignment, new_len: usize, ret_addr: usize) bool {
-            const self = @as(*Self, @ptrCast(@alignCast(ctx)));
+            const self: *Self = @ptrCast(@alignCast(ctx));
             _ = self;
             _ = buf;
             _ = alignment;
@@ -205,7 +205,7 @@ pub fn UmmAllocator(comptime config: Config) type {
         fn free(ctx: *anyopaque, buf: []u8, alignment: std.mem.Alignment, ret_addr: usize) void {
             _ = alignment;
             _ = ret_addr;
-            const self = @as(*Self, @ptrCast(@alignCast(ctx)));
+            const self: *Self = @ptrCast(@alignCast(ctx));
 
             const addr = @intFromPtr(buf.ptr) - @offsetOf(Block.Storage, "body");
             const aligned_addr = std.mem.alignBackward(usize, addr, @alignOf(Block.Storage));

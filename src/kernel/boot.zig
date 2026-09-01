@@ -1,18 +1,16 @@
 //! # Bootup code
 //! Contains the signature, bootup sequence, panic handlers, and a zmain
 
+// zlint-disable unused-decls -- __velox_header__ and others must be there to make the brain boot the image
+
 const std = @import("std");
 const umm = @import("velox_umm");
 const velox_sdk = @import("velox_sdk");
-const devices = @import("devices.zig");
 const jmptbl = @import("velox_jumptable");
 const banner = @import("banner.zig");
 const validation = @import("validation.zig");
 const vbar = @import("vbar.zig");
 const user_code = @import("user_code");
-
-const testing = @import("testing.zig");
-const assert = testing.assert;
 
 pub const std_options = std.Options{
     // this setting is required because of how umm works.
@@ -75,6 +73,7 @@ extern var __bss_end: u8;
 
 const UmmAllocType = umm.UmmAllocator(.{});
 
+// SAFETY: this is initalized after bss is cleared
 var global_alloc: UmmAllocType = undefined;
 var heap_ok: bool = false;
 
