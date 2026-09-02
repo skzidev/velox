@@ -22,12 +22,12 @@ pub const Pneumatic = struct {
 
     /// Extends the pneumatic cylinder (sets output high).
     pub fn extend(self: *const Pneumatic) void {
-        self.adi.set(true);
+        self.adi.set(@intFromBool(true));
     }
 
     /// Retracts the pneumatic cylinder (sets output low).
     pub fn retract(self: *const Pneumatic) void {
-        self.adi.set(false);
+        self.adi.set(@intFromBool(false));
     }
 
     /// Toggles the pneumatic cylinder between extended and retracted.
