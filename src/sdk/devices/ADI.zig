@@ -62,8 +62,7 @@ pub const ADI = struct {
         /// The port of the expander (0 if it is on the brain)
         expanderPort: u32,
     ) errors.DeviceInitError!ADI {
-        if (std.mem.indexOfScalar(u8, "ABCDEFGH", port) == null)
-            return errors.DeviceInitError.InvalidPortError;
+        // TODO find out why serial is not flushing
         // TODO add support for using ADI expanders
         // This just means that the user can pass this port in if they would like
         if (expanderPort >= 21) return errors.DeviceInitError.InvalidPortError;

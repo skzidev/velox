@@ -181,8 +181,7 @@ fn zmain() noreturn {
     };
 
     user_code.main(init) catch {
-        _ = jmptbl.serial.vexSerialWriteBuffer(1, @ptrCast(@constCast("error encountered")), 16);
-        banner.serialFlush();
+        velox_sdk.V5Io.File.stdout().writeStreamingAll(init.io, "User main returned error") catch @panic("Double-fault");
         jmptbl.system.vexSystemExitRequest();
     };
     main_finished = true;
