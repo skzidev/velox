@@ -14,9 +14,9 @@ pub const Pneumatic = struct {
     adi: adi.ADI,
 
     /// Initializes a pneumatic solenoid on the given ADI port.
-    pub fn init(port: u8, expander: u32) Pneumatic {
+    pub fn init(port: u8, expander: u32) !Pneumatic {
         return .{
-            .adi = adi.ADI.init(port, .digitalOut, expander),
+            .adi = try adi.ADI.init(port, .digitalOut, expander),
         };
     }
 
