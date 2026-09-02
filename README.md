@@ -13,6 +13,14 @@
   <img src="https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fskzidev%2Fvelox%2Frefs%2Fheads%2Fmain%2Fbuild.zig.zon&search=%5C.version%20%3D%20%22(%5Cd%5C.%5Cd%5C.%5Cd)%22&replace=%241&style=for-the-badge&label=Version" alt="Velox Version">
 </p>
 
+## Getting Started
+
+To get started using Velox, create a new project folder and run this command:
+
+```sh
+curl -fsSL "https://raw.githubusercontent.com/skzidev/velox/refs/heads/main/new_project.sh" | sh
+```
+
 ## Roadmap
 
 - [x] Write boot code
