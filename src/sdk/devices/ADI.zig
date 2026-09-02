@@ -85,7 +85,7 @@ pub const ADI = struct {
     /// ```zig
     /// const value = adi.get();
     /// ```
-    pub fn get(self: *ADI) u32 {
+    pub fn get(self: *const ADI) u32 {
         return jmptbl.adi.vexDeviceAdiValueGet(self._expander, self._port);
     }
 
@@ -98,7 +98,7 @@ pub const ADI = struct {
     /// adi.set(1);  // set digital output high
     /// adi.set(0);  // set digital output low
     /// ```
-    pub fn set(self: *ADI, value: i32) void {
+    pub fn set(self: *const ADI, value: i32) void {
         jmptbl.adi.vexDeviceAdiValueSet(self._expander, self._port, value);
     }
 };
