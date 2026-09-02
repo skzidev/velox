@@ -69,11 +69,11 @@ pub const ADI = struct {
         if (expanderPort >= 21) return errors.DeviceInitError.InvalidPortError;
         const validatedExpanderPort = if (expanderPort == 0) 22 else expanderPort - 1;
         const expander = jmptbl.devices.vexDeviceGetByIndex(validatedExpanderPort);
-        jmptbl.adi.vexDeviceAdiPortConfigSet(expander, port, kind);
+        jmptbl.adi.vexDeviceAdiPortConfigSet(expander, port, @enumFromInt(@intFromEnum(kind)));
         return ADI{
-            ._expander = expander,
-            ._port = port,
-            ._kind = kind,
+            .expander = expander,
+            .port = port,
+            .kind = kind,
         };
     }
 
