@@ -7,10 +7,15 @@ const velox = @import("velox");
 /// forward/coast mode, then sleeps forever.
 pub fn main(init: velox.Init) !void {
     const stdout = velox.V5Io.File.stdout();
-    const pneumatic = velox.Pneumatic.init(1, 0) catch |err| {
+    const pneumatic = velox.Pneumatic.init(0, 0) catch |err| {
         try stdout.writeStreamingAll(init.io, @errorName(err));
         return;
     };
+    pneumatic.extend();
+    try init.io.sleep(
+        std.Io.Duration.fromSeconds(2),
+        .awake,
+    );
     pneumatic.retract();
     while (true) {
         try init.io.sleep(

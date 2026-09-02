@@ -66,7 +66,7 @@ pub const ADI = struct {
         // TODO add support for using ADI expanders
         // This just means that the user can pass this port in if they would like
         if (expanderPort >= 21) return errors.DeviceInitError.InvalidPortError;
-        const validatedExpanderPort = if (expanderPort == 0) 22 else expanderPort - 1;
+        const validatedExpanderPort = if (expanderPort == 0) 21 else expanderPort - 1;
         const expander = jmptbl.devices.vexDeviceGetByIndex(validatedExpanderPort);
         jmptbl.adi.vexDeviceAdiPortConfigSet(expander, port, @enumFromInt(@intFromEnum(kind)));
         return ADI{
@@ -85,7 +85,7 @@ pub const ADI = struct {
     /// const value = adi.get();
     /// ```
     pub fn get(self: *const ADI) u32 {
-        return jmptbl.adi.vexDeviceAdiValueGet(self._expander, self._port);
+        return jmptbl.adi.vexDeviceAdiValueGet(self.expander, self.port);
     }
 
     /// Writes a value to the ADI port.
