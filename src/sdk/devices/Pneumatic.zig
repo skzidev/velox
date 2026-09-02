@@ -16,27 +16,27 @@ pub const Pneumatic = struct {
     /// Initializes a pneumatic solenoid on the given ADI port.
     pub fn init(port: u8, expander: u32) Pneumatic {
         return .{
-            ._adi = adi.ADI.init(port, .digitalOut, expander),
+            .adi = adi.ADI.init(port, .digitalOut, expander),
         };
     }
 
     /// Extends the pneumatic cylinder (sets output high).
     pub fn extend(self: *const Pneumatic) void {
-        self._adi.set(true);
+        self.adi.set(true);
     }
 
     /// Retracts the pneumatic cylinder (sets output low).
     pub fn retract(self: *const Pneumatic) void {
-        self._adi.set(false);
+        self.adi.set(false);
     }
 
     /// Toggles the pneumatic cylinder between extended and retracted.
     pub fn toggle(self: *const Pneumatic) void {
-        self._adi.set(!self._adi.get());
+        self.adi.set(!self.adi.get());
     }
 
     /// Sets the pneumatic cylinder to the given state (`true` = extend, `false` = retract).
     pub fn set(self: *const Pneumatic, v: bool) void {
-        self._adi.set(v);
+        self.adi.set(v);
     }
 };
