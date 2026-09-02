@@ -99,6 +99,6 @@ pub const ADI = struct {
     /// adi.set(0);  // set digital output low
     /// ```
     pub fn set(self: *const ADI, value: i32) void {
-        jmptbl.adi.vexDeviceAdiValueSet(self._expander, self._port, value);
+        jmptbl.adi.vexDeviceAdiValueSet(self.expander, self.port, value);
     }
 };
