@@ -1,6 +1,7 @@
 const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
+const convert = @import("../convert.zig");
 
 /// A VEX V5 Distance Sensor (276-4852).
 ///
@@ -21,7 +22,7 @@ const errors = @import("../error.zig");
 /// }
 /// ```
 pub const Distance = struct {
-    handle: ?*anyopaque,
+    _handle: ?*anyopaque,
 
     /// Initializes a Distance Sensor on the given port.
     ///
@@ -69,14 +70,7 @@ pub const Distance = struct {
         unit: units.LengthUnit,
     ) f32 {
         const mm = jmptbl.distance.vexDeviceDistanceDistanceGet(self._handle);
-        return switch (unit) {
-            // metric
-            .millimeter => mm,
-            .centimeter => mm / 10,
-            // imperial
-            .inch => mm / 25.4,
-            .feet => (mm / 25.4) / 12,
-        };
+        return convert.distanceFromMillimeters(mm, unit);
     }
 
     /// Returns the sensor's confidence in the current distance reading

@@ -1,7 +1,7 @@
 const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
-const pi = @import("std").math.pi;
+const convert = @import("../convert.zig");
 
 /// A VEX V5 Rotation Sensor — an absolute encoder that provides
 /// precise angular position, velocity, and angle readings.
@@ -21,7 +21,7 @@ const pi = @import("std").math.pi;
 /// const rpm = rot.velocity();
 /// ```
 pub const Rotation = struct {
-    handle: ?*anyopaque,
+    _handle: ?*anyopaque,
 
     /// Initializes a Rotation Sensor on the given port.
     ///
@@ -137,11 +137,7 @@ pub const Rotation = struct {
     /// ```
     pub fn angle(self: *const Rotation, unit: units.RotationalUnit) f64 {
         const deg = jmptbl.rotation.vexDeviceAbsEncAngleGet(self._handle);
-        return switch (unit) {
-            .radian => deg * (pi / 180),
-            .degree => deg,
-            .turn => deg / 360,
-        };
+        return convert.angleFromDegrees(deg, unit);
     }
 
     /// Sets the sensor's data rate in milliseconds.

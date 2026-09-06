@@ -31,6 +31,21 @@
 const io = @import("./Io.zig");
 const init = @import("Init.zig");
 const controller = @import("controller.zig");
+const convert = @import("convert.zig");
+const units = @import("units.zig");
+const errors = @import("error.zig");
+
+/// A collection of pure, hardware-free unit conversion helpers shared by
+/// the device drivers. Because they never call into the VEXos jumptable
+/// they can be exercised anywhere, including on a host during testing.
+pub const Convert = convert;
+
+/// The motor, temperature, length, and rotational unit enums accepted by
+/// the SDK device APIs.
+pub const Units = units;
+
+/// Errors returned by the SDK during device initialization.
+pub const Errors = errors;
 
 /// The "Juicy Main" init type — the entry point for all Velox user programs.
 ///
@@ -69,6 +84,7 @@ const bumper = @import("devices/Bumper.zig");
 const rotational = @import("devices/Rotation.zig");
 const inertial = @import("devices/Inertial.zig");
 const pneumatic = @import("devices/Pneumatic.zig");
+const optical = @import("devices/Optical.zig");
 
 /// A VEX V5 Smart Motor (both 11 W and 5.5 W variants).
 ///
@@ -148,6 +164,21 @@ pub const Inertial = inertial.Inertial;
 /// piston.retract();
 /// ```
 pub const Pneumatic = pneumatic.Pneumatic;
+
+/// A VEX V5 Optical Sensor (color + proximity).
+///
+/// Currently a stub — only [`init`](Optical.init) is implemented.
+///
+/// ```zig
+/// var optical = try velox_sdk.Optical.init(7);
+/// ```
+pub const Optical = optical.Optical;
+
+/// Interface for reading the V5 Brain's battery level.
+///
+/// **Currently a stub** — [`getLevel`](Battery.getLevel) does not yet
+/// return a meaningful value.
+pub const Battery = @import("battery.zig").Battery;
 
 /// A VEX V5 Controller.
 ///

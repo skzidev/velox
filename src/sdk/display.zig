@@ -47,7 +47,7 @@ pub const Display = struct {
         str: []const u8,
         /// The line number (0–7). Negative values return an error.
         line: i32,
-    ) DisplayError.InvalidLineError!void {
+    ) (DisplayError || error{OutOfMemory})!void {
         if (line < 0) return DisplayError.InvalidLineError;
 
         const c_string = try allocator.dupeZ(u8, str);

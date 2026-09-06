@@ -1,7 +1,7 @@
 const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
-const pi = @import("std").math.pi;
+const convert = @import("../convert.zig");
 
 // TODO some functions (like position-aware spin commands) are missing
 
@@ -124,20 +124,11 @@ pub const Motor = struct {
         /// The unit of the speed value.
         unit: units.MotorUnit,
     ) void {
-        switch (unit) {
-            .rpm => {
-                jmptbl.motor.vexDeviceMotorVelocitySet(self.handle, speed);
-            },
-            .mvolts => {
-                jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, speed);
-            },
-            .volts => {
-                jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, speed * 1000);
-            },
-            .percent => {
-                jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, @divTrunc((speed * 127), 100));
-            },
+        if (unit == .rpm) {
+            jmptbl.motor.vexDeviceMotorVelocitySet(self.handle, speed);
+            return;
         }
+        jmptbl.motor.vexDeviceMotorVoltageSet(self.handle, convert.motorSpeedToMvolts(speed, unit).?);
     }
 
     /// Initializes a motor on the given port.
@@ -191,10 +182,7 @@ pub const Motor = struct {
         unit: units.TempUnit,
     ) f64 {
         const cTemp = jmptbl.motor.vexDeviceMotorTemperatureGet(self.handle);
-        return switch (unit) {
-            .celsius => cTemp,
-            .fahrenheit => (cTemp * (9.0 / 5.0)) + 32,
-        };
+        return convert.tempToUnit(cTemp, unit);
     }
 
     /// Returns `true` if the motor is currently overheating.
@@ -246,14 +234,10 @@ pub const Motor = struct {
     pub fn pos(self: *const Motor, unit: units.RotationalUnit) f64 {
         if (unit == .degree or unit == .radian) {
             jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderDegrees);
-        } else {
-            jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderRotations);
+            return convert.angleFromDegrees(jmptbl.motor.vexDeviceMotorPositionGet(self.handle), unit);
         }
-        var v = jmptbl.motor.vexDeviceMotorPositionGet(self.handle);
-        if (unit == .radian) {
-            v *= (pi / 180);
-        }
-        return v;
+        jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderRotations);
+        return jmptbl.motor.vexDeviceMotorPositionGet(self.handle);
     }
 
     /// Returns the motor kind (full-size 11 W or compact 5.5 W).
@@ -301,25 +285,22 @@ pub const Motor = struct {
     /// motor.setPos(1.0, .turn);  // set to 1 full turn
     /// ```
     pub fn setPos(self: *const Motor, value: f64, unit: units.RotationalUnit) void {
-        var v = value;
         if (unit == .degree or unit == .radian) {
             jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderDegrees);
-            if (unit == .radian)
-                v *= (pi / 180);
+            jmptbl.motor.vexDeviceMotorPositionSet(self.handle, convert.positionToDegrees(value, unit));
         } else {
             jmptbl.motor.vexDeviceMotorEncoderUnitsSet(self.handle, .kMotorEncoderRotations);
+            jmptbl.motor.vexDeviceMotorPositionSet(self.handle, value);
         }
-        jmptbl.motor.vexDeviceMotorPositionSet(self.handle, v);
     }
 
     // TODO add units to speed
     pub fn spinToPos(self: *const Motor, position: f64, posUnit: units.RotationalUnit, speed: i32) void {
-        const posInDeg = switch (posUnit) {
-            .degree => position,
-            .radian => position * @divTrunc(180, pi),
-            .turn => position / 360,
-        };
-        jmptbl.motor.vexDeviceMotorAbsoluteTargetSet(self.handle, posInDeg, speed);
+        jmptbl.motor.vexDeviceMotorAbsoluteTargetSet(
+            self.handle,
+            convert.positionToDegrees(position, posUnit),
+            speed,
+        );
     }
 
     /// Stops the motor.

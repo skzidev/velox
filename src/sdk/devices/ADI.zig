@@ -1,5 +1,4 @@
 const jmptbl = @import("velox_jumptable");
-const std = @import("std");
 const errors = @import("../error.zig");
 
 /// A VEX ADI (Analog/Digital Interface) port on the 3-wire expander.

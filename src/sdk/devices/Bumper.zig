@@ -39,9 +39,9 @@ pub const Bumper = struct {
         port: u8,
         expander: u32,
     ) errors.DeviceInitError!Bumper {
-        const adiInstance = try adi.ADI.init(port, adi.ADIKind.digitalIn, expander);
+        const adiInstance = try adi.ADI.init(port, adi.ADI.ADIKind.digitalIn, expander);
         return Bumper{
-            ._adi = adiInstance,
+            .adi = adiInstance,
         };
     }
 
@@ -57,6 +57,6 @@ pub const Bumper = struct {
     /// }
     /// ```
     pub fn state(self: *Bumper) BumperState {
-        return if (self._adi.get() <= 1) .pressed else .released;
+        return if (self.adi.get() <= 1) .pressed else .released;
     }
 };

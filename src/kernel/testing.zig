@@ -42,5 +42,6 @@ comptime {
     if (builtin.is_test) {
         std.testing.refAllDecls(@import("./testing/umm.zig"));
         _ = @import("./testing/sdk.zig");
+        _ = @import("./testing/kernel.zig");
     }
 }

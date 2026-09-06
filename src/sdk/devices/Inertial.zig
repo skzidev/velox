@@ -1,8 +1,7 @@
 const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
-const std = @import("std");
-const pi = std.math.pi;
+const convert = @import("../convert.zig");
 
 /// A VEX V5 Inertial Sensor (IMU) — provides orientation, heading,
 /// and quaternion data for tracking robot rotation.
@@ -20,7 +19,7 @@ const pi = std.math.pi;
 /// const heading_rad = imu.heading(.radian);
 /// ```
 pub const Inertial = struct {
-    handle: ?*anyopaque,
+    _handle: ?*anyopaque,
 
     /// A quaternion representing the sensor's orientation in 3D space.
     ///
@@ -107,10 +106,6 @@ pub const Inertial = struct {
     /// ```
     pub fn heading(self: *const Inertial, unit: units.RotationalUnit) f64 {
         const deg = jmptbl.imu.vexDeviceImuHeadingGet(self._handle);
-        return switch (unit) {
-            .degree => deg,
-            .radian => deg * (pi / 180),
-            .turn => deg / 360,
-        };
+        return convert.angleFromDegrees(deg, unit);
     }
 };

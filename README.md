@@ -1,7 +1,5 @@
 <p align="center"><img src="assets/demo.png" style="margin: 0 auto; display: block;"></p>
 
-<br>
-
 <h1 align="center">Velox</h1>
 
 <p align="center"><strong>Open Source Zig Framework for VEX V5.</strong></p>
@@ -15,7 +13,14 @@
 
 ## Getting Started
 
-To get started using Velox, create a new project folder and run this command:
+To get started using Velox, you must have the following software installed:
+
+- Zig
+- Cargo (and cargo-v5)
+
+Additionally, this installation script only runs in UNIX environments (Linux and MacOS). Windows will be supported later.
+
+Create a new project folder and run this command:
 
 ```sh
 curl -fsSL "https://raw.githubusercontent.com/skzidev/velox/refs/heads/main/new_project.sh" | sh
