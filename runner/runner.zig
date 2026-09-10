@@ -39,6 +39,8 @@ pub fn main(init: velox.Init) anyerror!void {
     var pass: u32 = 0;
     var fail: u32 = 0;
 
+    const start = init.io.vtable.now(null, .awake);
+
     for (testFunctions) |testFunc| {
         const msg = try std.fmt.allocPrint(
             allocator,
@@ -58,5 +60,20 @@ pub fn main(init: velox.Init) anyerror!void {
         try stdout.writeStreamingAll(init.io, "PASS\n");
         pass += 1;
     }
-    try velox.V5Io.File.stdout().writeStreamingAll(init.io, "testing complete\n");
+
+    const end = init.io.vtable.now(null, .awake);
+
+    try velox.V5Io.File.stdout().writeStreamingAll(
+        init.io,
+        std.fmt.allocPrint(
+            allocator,
+            "ran {d} tests ({d} passed, {d} failed) in {d}ms\n",
+            .{
+                testFunctions.len,
+                pass,
+                fail,
+                end.toMilliseconds() - start.toMilliseconds(),
+            },
+        ) catch "testing complete (cannot format test statistics)\n",
+    );
 }

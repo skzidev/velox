@@ -5,6 +5,14 @@ pub const DeviceInitError = error{
     InvalidPortError,
 };
 
+/// Runtime errors for motion commands.
+pub const MotionError = error{
+    /// The motor has an active target; a conflicting command was rejected.
+    MotionInProgress,
+    /// A read was attempted while the Inertial sensor is still calibrating.
+    StillCalibrating,
+};
+
 /// Returns `true` if `port` is a valid VEX V5 smart port number.
 pub fn portIsValid(port: u32) bool {
     return (port < 21 and port != 0);

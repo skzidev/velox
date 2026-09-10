@@ -55,7 +55,7 @@ test "convert_angle_from_degrees" {
     const C = sdk.Convert;
     // Degrees are the identity.
     try assert(C.angleFromDegrees(270, .degree) == 270);
-    // Radians: 180° -> π, 360° -> 2π.
+    // Radians: 180deg -> pi, 360deg -> 2pi.
     try assert(std.math.approxEqAbs(f64, C.angleFromDegrees(180, .radian), std.math.pi, 1e-9));
     try assert(std.math.approxEqAbs(f64, C.angleFromDegrees(360, .radian), 2 * std.math.pi, 1e-9));
     try assert(std.math.approxEqAbs(f64, C.angleFromDegrees(90, .radian), 0.5 * std.math.pi, 1e-9));
