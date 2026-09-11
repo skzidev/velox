@@ -16,7 +16,7 @@ const errors = @import("../error.zig");
 /// ```
 pub const Optical = struct {
     /// The device handle returned by the VEXos jumptable.
-    _handle: ?*anyopaque,
+    var handle: ?*anyopaque = undefined;
 
     /// Initializes an Optical Sensor on the given smart port.
     ///
@@ -36,7 +36,7 @@ pub const Optical = struct {
     pub fn init(port: u32) errors.DeviceInitError!Optical {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
-        return .{ ._handle = jmptbl.devices.vexDeviceGetByIndex(port) };
+        return .{ .handle = jmptbl.devices.vexDeviceGetByIndex(port) };
     }
 
     // TODO implement optical sensor: proximity, color, gesture, LED control

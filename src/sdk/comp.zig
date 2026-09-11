@@ -174,7 +174,7 @@ pub const Competition = struct {
         io: std.Io,
         /// Competition callbacks
         callbacks: Callbacks,
-    ) CompetitionError!void {
-        _ = try io.concurrent(supervisor, .{ io, callbacks });
+    ) CompetitionError!std.Io.Future(SupervisorError!void) {
+        return try io.concurrent(supervisor, .{ io, callbacks });
     }
 };

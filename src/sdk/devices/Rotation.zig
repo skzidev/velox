@@ -21,7 +21,7 @@ const convert = @import("../convert.zig");
 /// const rpm = rot.velocity();
 /// ```
 pub const Rotation = struct {
-    _handle: ?*anyopaque,
+    var handle: ?*anyopaque = undefined;
 
     /// Initializes a Rotation Sensor on the given port.
     ///
@@ -37,7 +37,7 @@ pub const Rotation = struct {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
         return Rotation{
-            ._handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
+            .handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
         };
     }
 
@@ -50,7 +50,7 @@ pub const Rotation = struct {
     /// rot.reset();
     /// ```
     pub fn reset(self: *const Rotation) void {
-        jmptbl.rotation.vexDeviceAbsEncReset(self._handle);
+        jmptbl.rotation.vexDeviceAbsEncReset(self.handle);
     }
 
     /// Returns the sensor's velocity in RPM.
@@ -63,7 +63,7 @@ pub const Rotation = struct {
     /// ```
     pub fn velocity(self: *const Rotation) i32 {
         // TODO add units
-        return jmptbl.rotation.vexDeviceAbsEncVelocityGet(self._handle);
+        return jmptbl.rotation.vexDeviceAbsEncVelocityGet(self.handle);
     }
 
     /// Returns `true` if the sensor's direction is reversed.
@@ -77,7 +77,7 @@ pub const Rotation = struct {
     /// }
     /// ```
     pub fn isReversed(self: *const Rotation) bool {
-        return jmptbl.rotation.vexDeviceAbsEncReverseFlagGet(self._handle);
+        return jmptbl.rotation.vexDeviceAbsEncReverseFlagGet(self.handle);
     }
 
     /// Sets whether the sensor's direction is reversed.
@@ -90,7 +90,7 @@ pub const Rotation = struct {
     /// rot.setReversed(true);
     /// ```
     pub fn setReversed(self: *const Rotation, reversed: bool) void {
-        jmptbl.rotation.vexDeviceAbsEncReverseFlagSet(self._handle, reversed);
+        jmptbl.rotation.vexDeviceAbsEncReverseFlagSet(self.handle, reversed);
     }
 
     /// Returns the sensor's cumulative position in encoder ticks.
@@ -104,7 +104,7 @@ pub const Rotation = struct {
     /// ```
     pub fn pos(self: *const Rotation) i32 {
         // TODO add units
-        return jmptbl.rotation.vexDeviceAbsEncPositionGet(self._handle);
+        return jmptbl.rotation.vexDeviceAbsEncPositionGet(self.handle);
     }
 
     /// Sets the sensor's position to the given value.
@@ -116,7 +116,7 @@ pub const Rotation = struct {
     /// rot.setPos(0);  // reset position counter
     /// ```
     pub fn setPos(self: *const Rotation, value: i32) void {
-        jmptbl.rotation.vexDeviceAbsEncPositionSet(self._handle, value);
+        jmptbl.rotation.vexDeviceAbsEncPositionSet(self.handle, value);
     }
 
     /// Returns the sensor's absolute angle in the specified units.
@@ -136,7 +136,7 @@ pub const Rotation = struct {
     /// const rad = rot.angle(.radian);   // 0.0–6.28...
     /// ```
     pub fn angle(self: *const Rotation, unit: units.RotationalUnit) f64 {
-        const deg = jmptbl.rotation.vexDeviceAbsEncAngleGet(self._handle);
+        const deg = jmptbl.rotation.vexDeviceAbsEncAngleGet(self.handle);
         return convert.angleFromDegrees(deg, unit);
     }
 
@@ -150,6 +150,6 @@ pub const Rotation = struct {
     /// rot.setDataRate(10);  // update every 10 ms
     /// ```
     pub fn setDataRate(self: *const Rotation, rate: u32) void {
-        return jmptbl.rotation.vexDeviceAbsEncDataRateSet(self._handle, rate);
+        return jmptbl.rotation.vexDeviceAbsEncDataRateSet(self.handle, rate);
     }
 };

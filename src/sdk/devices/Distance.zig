@@ -22,7 +22,7 @@ const convert = @import("../convert.zig");
 /// }
 /// ```
 pub const Distance = struct {
-    _handle: ?*anyopaque,
+    var handle: ?*anyopaque = undefined;
 
     /// Initializes a Distance Sensor on the given port.
     ///
@@ -38,7 +38,7 @@ pub const Distance = struct {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
         return Distance{
-            ._handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
+            .handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
         };
     }
 
@@ -69,7 +69,7 @@ pub const Distance = struct {
         /// The unit for the returned distance.
         unit: units.LengthUnit,
     ) f32 {
-        const mm = jmptbl.distance.vexDeviceDistanceDistanceGet(self._handle);
+        const mm = jmptbl.distance.vexDeviceDistanceDistanceGet(self.handle);
         return convert.distanceFromMillimeters(mm, unit);
     }
 
@@ -89,7 +89,7 @@ pub const Distance = struct {
     pub fn confidence(
         self: *const Distance,
     ) u32 {
-        return jmptbl.distance.vexDeviceDistanceConfidenceGet(self._handle);
+        return jmptbl.distance.vexDeviceDistanceConfidenceGet(self.handle);
     }
 
     /// Returns the detected object's size as reported by the sensor.
@@ -104,7 +104,7 @@ pub const Distance = struct {
     pub fn objectSize(
         self: *const Distance,
     ) i32 {
-        return jmptbl.distance.vexDeviceDistanceObjectSizeGet(self._handle);
+        return jmptbl.distance.vexDeviceDistanceObjectSizeGet(self.handle);
     }
 
     /// Returns the detected object's velocity in meters per second.
@@ -122,6 +122,6 @@ pub const Distance = struct {
     pub fn objectVelocity(
         self: *const Distance,
     ) f64 {
-        return jmptbl.distance.vexDeviceDistanceObjectVelocityGet(self._handle);
+        return jmptbl.distance.vexDeviceDistanceObjectVelocityGet(self.handle);
     }
 };

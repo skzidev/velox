@@ -3,8 +3,6 @@ const units = @import("../units.zig");
 const errors = @import("../error.zig");
 const convert = @import("../convert.zig");
 
-// TODO some functions (like position-aware spin commands) are missing
-
 /// A VEX V5 Smart Motor — supports both the 11 W (276-4840) and
 /// 5.5 W (276-4842) variants.
 ///

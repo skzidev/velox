@@ -1,4 +1,4 @@
-const adi = @import("./ADI.zig");
+const adiModule = @import("./ADI.zig");
 const errors = @import("../error.zig");
 
 /// A VEX bumper switch sensor, connected via an ADI digital input port.
@@ -15,7 +15,7 @@ const errors = @import("../error.zig");
 /// }
 /// ```
 pub const Bumper = struct {
-    adi: adi.ADI,
+    var adi: adiModule.ADI = undefined;
 
     /// The state of a bumper switch sensor.
     pub const BumperState = enum(c_int) {
@@ -39,7 +39,7 @@ pub const Bumper = struct {
         port: u8,
         expander: u32,
     ) errors.DeviceInitError!Bumper {
-        const adiInstance = try adi.ADI.init(port, adi.ADI.ADIKind.digitalIn, expander);
+        const adiInstance = try adiModule.ADI.init(port, adiModule.ADI.ADIKind.digitalIn, expander);
         return Bumper{
             .adi = adiInstance,
         };

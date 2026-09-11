@@ -12,7 +12,7 @@ fn teleop() void {}
 /// Spins motor 1 on port 5 at 6 volts using the blue cartridge in
 /// forward/coast mode, then sleeps forever.
 pub fn main(init: velox.Init) !void {
-    try velox.Competition.compete(
+    _ = try velox.Competition.compete(
         init.io,
         .{
             .autonomous = auton,

@@ -13,17 +13,10 @@ pub const MotorUnit = enum {
     /// Revolutions per minute. The motor will attempt to hold this speed
     /// using its internal PID controller.
     rpm,
-    /// Voltage in millivolts. The V5 motor accepts integer values from
-    /// -12000 to 12000 mV.
-    mvolts,
-    /// Voltage in volts. The V5 motor accepts values from -12.0 to 12.0 V.
-    /// Internally converted to millivolts (`volts * 1000`) before being
-    /// sent to the hardware.
-    volts,
     /// Percentage of maximum speed. Range: -100 to 100. Internally
     /// converted to millivolts before being sent to the hardware.
     percent,
-};
+} || VoltageUnit;
 
 /// Units for temperature readings.
 ///
@@ -80,4 +73,14 @@ pub const RotationalUnit = enum {
     turn,
     /// Radians. One full rotation = 2π radians.
     radian,
+};
+
+pub const VoltageUnit = enum {
+    /// Voltage in volts. The V5 motor accepts values from -12.0 to 12.0 V.
+    /// Internally converted to millivolts (`volts * 1000`) before being
+    /// sent to the hardware.
+    volts,
+    /// Voltage in millivolts. The V5 motor accepts integer values from
+    /// -12000 to 12000 mV.
+    mvolts,
 };

@@ -22,7 +22,7 @@ const banner = std.fmt.comptimePrint(
     \\  ______        ___________/_/        | Zig v{s}
     \\ \\    \\      |     //     //        | Compiled for {s}
     \\   \\    \\    |___//     //          | SIMD support {s}
-    \\     \\    \\    //     //            | Built with type {s}
+    \\     \\    \\    //     //            | Built for {s}
     \\       \\    \\//     //_____         | {s} a test runner
     \\         \\         //       |        |
     \\          \\_______//________|        |

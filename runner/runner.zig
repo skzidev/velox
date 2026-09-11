@@ -53,17 +53,17 @@ pub fn main(init: velox.Init) anyerror!void {
         );
         defer allocator.free(msg);
         testFunc.func() catch {
-            try stdout.writeStreamingAll(init.io, "FAIL\n");
+            try stdout.writeStreamingAll(init.io, "\x1b[31mFAIL\x1b[0m\n");
             fail += 1;
             continue;
         };
-        try stdout.writeStreamingAll(init.io, "PASS\n");
+        try stdout.writeStreamingAll(init.io, "\x1b[32mPASS\x1b[0m\n");
         pass += 1;
     }
 
     const end = init.io.vtable.now(null, .awake);
 
-    try velox.V5Io.File.stdout().writeStreamingAll(
+    try stdout.writeStreamingAll(
         init.io,
         std.fmt.allocPrint(
             allocator,
