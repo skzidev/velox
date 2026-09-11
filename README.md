@@ -70,6 +70,8 @@ Velox builds on their research into the Brain's memory model and configuration.
 
 ## Tests
 
+**When cloning this repository, preserve symlinks.**
+
 Tests are written in Zig's testing framework, and their results are logged over serial. They run inside of a custom test runner which is itself written using Velox as a program. To run them yourself:
 
 ```sh

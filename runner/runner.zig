@@ -67,12 +67,13 @@ pub fn main(init: velox.Init) anyerror!void {
         init.io,
         std.fmt.allocPrint(
             allocator,
-            "ran {d} tests ({d} passed, {d} failed) in {d}ms\n",
+            "ran {d} tests ({d} passed, {d} failed) in {d}ms ({f}% passing rate)\n",
             .{
                 testFunctions.len,
                 pass,
                 fail,
                 end.toMilliseconds() - start.toMilliseconds(),
+                pass / (pass + fail),
             },
         ) catch "testing complete (cannot format test statistics)\n",
     );

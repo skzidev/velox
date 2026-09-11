@@ -3,16 +3,16 @@
 # This script creates a new Velox project using sh.
 # This will create files in the current directory.
 
-printf '%s\n' '                            /|        '
-printf '%s\n' '  ______        ___________/_/        '
-printf '%s\n' ' \\    \\      |     //     //        '
-printf '%s\n' '   \\    \\    |___//     //          '
-printf '%s\n' '     \\    \\    //     //            '
-printf '%s\n' '       \\    \\//     //_____         '
-printf '%s\n' '         \\         //       |        '
-printf '%s\n' '          \\_______//________|        '
-printf '%s\n' '                / /                   '
-printf '%s\n' '                |/                    '
+printf '%s\n' '                            /|'
+printf '%s\n' '  ______        ___________/_/'
+printf '%s\n' ' \\    \\      |     //     //'
+printf '%s\n' '   \\    \\    |___//     //  '
+printf '%s\n' '     \\    \\    //     //    '
+printf '%s\n' '       \\    \\//     //_____ '
+printf '%s\n' '         \\         //       |'
+printf '%s\n' '          \\_______//________|'
+printf '%s\n' '                / /           '
+printf '%s\n' '                |/            '
 printf "Copyright (c) 2026 59218C, licensed under MIT.\n"
 
 zig init > /dev/null 2>&1
