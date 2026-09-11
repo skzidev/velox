@@ -16,6 +16,7 @@ const errors = @import("../error.zig");
 /// ```
 pub const Optical = struct {
     /// The device handle returned by the VEXos jumptable.
+    // SAFETY: this is overriden in .init()
     var handle: ?*anyopaque = undefined;
 
     /// Initializes an Optical Sensor on the given smart port.

@@ -21,6 +21,7 @@ const convert = @import("../convert.zig");
 /// const rpm = rot.velocity();
 /// ```
 pub const Rotation = struct {
+    // SAFETY: this is overriden in .init()
     var handle: ?*anyopaque = undefined;
 
     /// Initializes a Rotation Sensor on the given port.

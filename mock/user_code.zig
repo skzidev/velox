@@ -1,7 +1,4 @@
 const velox = @import("velox");
-const config = @import("config.zig");
-
-const stdout = velox.V5Io.File.stdout();
 
 fn auton() void {}
 

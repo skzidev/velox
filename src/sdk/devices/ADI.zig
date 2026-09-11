@@ -41,8 +41,11 @@ pub const ADI = struct {
         unknown = 255,
     };
 
+    // SAFETY: this is overriden in .init()
     var expander: ?*anyopaque = undefined;
+    // SAFETY: this is overriden in .init()
     var port: u32 = undefined;
+    // SAFETY: this is overriden in .init()
     var kind: ADIKind = undefined;
 
     /// Initializes an ADI port with the specified mode.

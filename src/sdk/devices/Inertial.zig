@@ -19,6 +19,7 @@ const convert = @import("../convert.zig");
 /// const heading_rad = imu.heading(.radian);
 /// ```
 pub const Inertial = struct {
+    // SAFETY: this is overriden in .init()
     var handle: ?*anyopaque = undefined;
 
     /// A quaternion representing the sensor's orientation in 3D space.

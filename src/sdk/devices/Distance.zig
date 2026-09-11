@@ -22,6 +22,7 @@ const convert = @import("../convert.zig");
 /// }
 /// ```
 pub const Distance = struct {
+    // SAFETY: this is overriden in .init()
     var handle: ?*anyopaque = undefined;
 
     /// Initializes a Distance Sensor on the given port.

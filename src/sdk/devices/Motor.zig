@@ -89,7 +89,8 @@ pub const Motor = struct {
         jmptbl.motor.vexDeviceMotorReverseFlagSet(self.handle, @intFromEnum(spinDirection));
     }
 
-    handle: ?*anyopaque,
+    // SAFETY: this is overriden in .init()
+    var handle: ?*anyopaque = undefined;
 
     /// Spins the motor at the given speed in the specified units.
     ///
@@ -153,12 +154,12 @@ pub const Motor = struct {
     ) errors.DeviceInitError!Motor {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
-        const handle = jmptbl.devices.vexDeviceGetByIndex(port - 1);
-        jmptbl.motor.vexDeviceMotorGearingSet(handle, @enumFromInt(@intFromEnum(cart)));
-        jmptbl.motor.vexDeviceMotorReverseFlagSet(handle, if (dir == .reverse) 1 else 0);
-        jmptbl.motor.vexDeviceMotorBrakeModeSet(handle, @enumFromInt(@intFromEnum(braking)));
+        const h = jmptbl.devices.vexDeviceGetByIndex(port - 1);
+        jmptbl.motor.vexDeviceMotorGearingSet(h, @enumFromInt(@intFromEnum(cart)));
+        jmptbl.motor.vexDeviceMotorReverseFlagSet(h, if (dir == .reverse) 1 else 0);
+        jmptbl.motor.vexDeviceMotorBrakeModeSet(h, @enumFromInt(@intFromEnum(braking)));
         return Motor{
-            .handle = handle,
+            .handle = h,
         };
     }
 
