@@ -2,8 +2,7 @@ const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
 const convert = @import("../convert.zig");
-
-// TODO some functions (like position-aware spin commands) are missing
+const pool = @import("../devices.zig");
 
 /// A VEX V5 Smart Motor — supports both the 11 W (276-4840) and
 /// 5.5 W (276-4842) variants.
@@ -154,7 +153,15 @@ pub const Motor = struct {
         braking: BrakeMode,
     ) errors.DeviceInitError!Motor {
         if (!errors.portIsValid(port))
-            return errors.DeviceInitError.InvalidPortError;
+            return errors.DeviceInitError.InvalidPort;
+        if (pool.isClaimed(@intCast(port)) catch {
+            return errors.DeviceInitError.InvalidPort;
+        }) {
+            return errors.DeviceInitError.PortUsed;
+        }
+        pool.claim(@intCast(port)) catch {
+            return errors.DeviceInitError.InvalidPort;
+        };
         const handle = jmptbl.devices.vexDeviceGetByIndex(port - 1);
         jmptbl.motor.vexDeviceMotorGearingSet(handle, @enumFromInt(@intFromEnum(cart)));
         jmptbl.motor.vexDeviceMotorReverseFlagSet(handle, if (dir == .reverse) 1 else 0);

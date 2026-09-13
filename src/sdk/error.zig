@@ -2,7 +2,9 @@
 pub const DeviceInitError = error{
     /// The port number is invalid. Valid smart ports are 1–20; valid ADI
     /// ports are 1–8.
-    InvalidPortError,
+    InvalidPort,
+    /// The port is already being used by another device
+    PortUsed,
 };
 
 /// Runtime errors for motion commands.
