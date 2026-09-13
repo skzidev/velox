@@ -18,6 +18,8 @@ To get started using Velox, you must have the following software installed:
 - Zig
 - Cargo (and cargo-v5)
 
+We're looking to replace cargo-v5 so you don't need to install cargo, but we haven't yet. This requirement should be replaced soon, hopefully.
+
 Additionally, this installation script only runs in UNIX environments (Linux and MacOS). Windows will be supported later.
 
 Create a new project folder and run this command:
@@ -34,23 +36,16 @@ curl -fsSL "https://raw.githubusercontent.com/skzidev/velox/refs/heads/main/new_
 - [x] Jumptable integration
 - [x] Device Drivers (_partially done_)
 - [ ] Custom Uploader program
-- [ ] GUI library (Potentially written on top of a library like [Knots](https://codeberg.org/shahwali/knots))
+- [ ] GUI library written on top of [Zigui](https://github.com/ddalcu/zigui)
 
 #### Additional work
 
 - [ ] Refactor `velox-jumptable` to just read from C header files and map memory addresses instead of generating bindings
 - [ ] Refactor `velox-jumptable` into this monorepo
 
-## Modules
-
-- [Kernel](./src/kernel/README.md)
-- [SDK](./src/sdk/README.md)
-- [Umm](./src/umm/README.md)
-- [Jumptable](https://github.com/skzidev/velox-jumptable)
-
 ## Competition Legality
 
-According to rule `<R8>` of the Override Game Manual, custom firmware modifications are not permitted. Velox is a user program. Like PROS and Vexide, it should be 100% fair game, so long as you understand what it does.
+Velox should be 100% legal. It is simply a framework for writing user programs.
 
 ## Licensing
 
@@ -70,10 +65,16 @@ Velox builds on their research into the Brain's memory model and configuration.
 
 ## Tests
 
-Tests are written in Zig's testing framework, and their results are logged over serial. They run inside of a custom test runner which is itself written using Velox as a program. To run them yourself:
+> [!WARNING]
+> When cloning this repostiory to run the unit tests, preserve symlinks. Not doing this will break the unit tests for the umm allocator. Especially on Windows.
+
+Velox's unit tests run on the brain hardware. To run them yourself, plug in a brain and run the command:
 
 ```sh
 zig build test
 ```
 
-The results are written to serial.
+You can see the unit test results over serial.
+
+> [!NOTE]
+> Because we don't have a V5 brain as a test runner, these unit tests are not part of our CI.

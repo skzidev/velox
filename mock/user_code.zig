@@ -1,5 +1,4 @@
 const velox = @import("velox");
-const config = @import("config.zig");
 
 const stdout = velox.V5Io.File.stdout();
 
@@ -8,10 +7,8 @@ fn auton() void {}
 fn teleop() void {}
 
 /// Example user program for the Velox SDK.
-///
-/// Spins motor 1 on port 5 at 6 volts using the blue cartridge in
-/// forward/coast mode, then sleeps forever.
 pub fn main(init: velox.Init) !void {
+    try stdout.writeStreamingAll(init.io, "This is a Velox project.");
     try velox.Competition.compete(
         init.io,
         .{
