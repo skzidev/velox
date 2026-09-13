@@ -14,7 +14,7 @@ fn getVersion() !std.SemanticVersion {
 const VeloxVersion = getVersion() catch {
     @compileError("Cannot retrieve version from build.zig.zon");
 };
-pub const VeloxVersionAsString = std.fmt.comptimePrint("{d}.{d}.{d}", .{ VeloxVersion.major, VeloxVersion.minor, VeloxVersion.patch });
+pub const VeloxVersionAsString = manifest.version;
 
 const banner = std.fmt.comptimePrint(
     \\
