@@ -154,13 +154,11 @@ pub const Motor = struct {
     ) errors.DeviceInitError!Motor {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPort;
-        if (pool.isClaimed(@intCast(port)) catch {
-            return errors.DeviceInitError.InvalidPort;
-        }) {
+        const poolIdx: usize = @intCast(port);
+        // we know it's a valid port because we already validated it so the only reason that a pool
+        // claim could throw an error is if the port is used
+        pool.claim(poolIdx) catch {
             return errors.DeviceInitError.PortUsed;
-        }
-        pool.claim(@intCast(port)) catch {
-            return errors.DeviceInitError.InvalidPort;
         };
         const handle = jmptbl.devices.vexDeviceGetByIndex(port - 1);
         jmptbl.motor.vexDeviceMotorGearingSet(handle, @enumFromInt(@intFromEnum(cart)));
