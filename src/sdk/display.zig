@@ -1,8 +1,6 @@
 const jmptbl = @import("velox_jumptable");
 const std = @import("std");
 
-// TODO implement display
-
 /// An abstraction over the V5 Brain's built-in LCD display.
 ///
 /// Supports line-based text output. Lines are numbered 0–7.
@@ -28,7 +26,13 @@ pub const Display = struct {
     pub const DisplayError = error{
         /// The specified line number is invalid (less than 0).
         InvalidLineError,
+        InvalidCoordinateError,
     };
+
+    pub fn putPixel(x: u32, y: u32, c: u32) DisplayError!void {
+        jmptbl.display.vexDisplayForegroundColor(c);
+        jmptbl.display.vexDisplayPixelSet(x, y);
+    }
 
     /// Prints a string to the LCD on the specified line.
     ///
