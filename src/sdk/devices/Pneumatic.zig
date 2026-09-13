@@ -11,8 +11,7 @@ const adiModule = @import("ADI.zig");
 /// piston.extend();
 /// ```
 pub const Pneumatic = struct {
-    // SAFETY: this is overriden in .init()
-    var adi: adiModule.ADI = undefined;
+    adi: adiModule.ADI,
 
     /// Initializes a pneumatic solenoid on the given ADI port.
     pub fn init(port: u8, expander: u32) !Pneumatic {

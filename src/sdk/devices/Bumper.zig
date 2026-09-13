@@ -15,8 +15,7 @@ const errors = @import("../error.zig");
 /// }
 /// ```
 pub const Bumper = struct {
-    // SAFETY: this is overriden in .init()
-    var adi: adiModule.ADI = undefined;
+    adi: adiModule.ADI,
 
     /// The state of a bumper switch sensor.
     pub const BumperState = enum(c_int) {

@@ -23,8 +23,7 @@ const pool = @import("../devices.zig");
 /// }
 /// ```
 pub const Distance = struct {
-    // SAFETY: this is overriden in .init()
-    var handle: ?*anyopaque = undefined;
+    handle: ?*anyopaque,
 
     /// Initializes a Distance Sensor on the given port.
     ///
@@ -38,7 +37,7 @@ pub const Distance = struct {
         port: u32,
     ) errors.DeviceInitError!Distance {
         if (!errors.portIsValid(port))
-            return errors.DeviceInitError.InvalidPortError;
+            return errors.DeviceInitError.InvalidPort;
         const poolIdx: usize = @intCast(port);
         pool.claim(poolIdx) catch {
             return errors.DeviceInitError.PortUsed;

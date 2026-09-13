@@ -200,11 +200,11 @@ test "errors_port_is_valid_boundaries" {
 
 test "errors_device_init_error_defined" {
     // Referencing the field forces the error set to be analyzed.
-    const err: sdk.Errors.DeviceInitError = sdk.Errors.DeviceInitError.InvalidPortError;
-    if (err == error.InvalidPortError) {
+    const err: sdk.Errors.DeviceInitError = sdk.Errors.DeviceInitError.InvalidPort;
+    if (err == error.InvalidPort) {
         return;
     }
-    return error.InvalidPortError;
+    return error.InvalidPort;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,47 +215,47 @@ test "motor_init_rejects_invalid_ports" {
     // 0 is not a smart port.
     if (sdk.Motor.init(0, .green, .forward, .coast)) |_| {
         return error.Rejected;
-    } else |err| try assert(err == error.InvalidPortError);
+    } else |err| try assert(err == error.InvalidPort);
     // Above 20 is out of range.
     if (sdk.Motor.init(21, .green, .forward, .coast)) |_| {
         return error.Rejected;
-    } else |err| try assert(err == error.InvalidPortError);
+    } else |err| try assert(err == error.InvalidPort);
     if (sdk.Motor.init(22, .green, .forward, .coast)) |_| {
         return error.Rejected;
-    } else |err| try assert(err == error.InvalidPortError);
+    } else |err| try assert(err == error.InvalidPort);
 }
 
 test "distance_init_rejects_invalid_ports" {
-    if (sdk.Distance.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
-    if (sdk.Distance.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.Distance.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
+    if (sdk.Distance.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 test "rotation_init_rejects_invalid_ports" {
-    if (sdk.Rotation.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
-    if (sdk.Rotation.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.Rotation.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
+    if (sdk.Rotation.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 test "inertial_init_rejects_invalid_ports" {
-    if (sdk.Inertial.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
-    if (sdk.Inertial.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.Inertial.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
+    if (sdk.Inertial.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 test "optical_init_rejects_invalid_ports" {
-    if (sdk.Optical.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
-    if (sdk.Optical.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.Optical.init(0)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
+    if (sdk.Optical.init(21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 test "adi_init_rejects_invalid_expander" {
-    if (sdk.ADI.init(1, .digitalIn, 21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
-    if (sdk.ADI.init(1, .digitalIn, 22)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.ADI.init(1, .digitalIn, 21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
+    if (sdk.ADI.init(1, .digitalIn, 22)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 test "bumper_init_rejects_invalid_expander" {
-    if (sdk.Bumper.init(1, 21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.Bumper.init(1, 21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 test "pneumatic_init_rejects_invalid_expander" {
-    if (sdk.Pneumatic.init(1, 21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPortError);
+    if (sdk.Pneumatic.init(1, 21)) |_| return error.Rejected else |err| try assert(err == error.InvalidPort);
 }
 
 // ---------------------------------------------------------------------------
@@ -580,7 +580,7 @@ test "run_asynchronously" {
 }
 
 // Verifies that `io.sleep` blocks for approximately the requested
-// duration (within a 2 ms tolerance).
+// duration (within a 2 ms tolerance since this is a cooperative scheduler).
 test "sleep" {
     var threaded = sdk.V5Io.init();
     var io = threaded.io();
@@ -589,6 +589,20 @@ test "sleep" {
     const end = io.vtable.now(null, .awake).toMilliseconds();
     const diff = end - start;
     try assert(diff >= 4 and diff <= 6);
+}
+
+test "no_reusing_ports" {
+    const dv1 = try sdk.Inertial.init(1);
+    const dv2: ?sdk.Inertial = sdk.Inertial.init(1) catch null;
+    try assert(dv2 == null);
+    try dv1.deinit();
+}
+
+test "port_deinitialization_allows_port_reuse" {
+    const dv1 = try sdk.Inertial.init(1);
+    try dv1.deinit();
+    const dv2: ?sdk.Inertial = sdk.Inertial.init(1) catch null;
+    try assert(dv2 != null);
 }
 
 // ---------------------------------------------------------------------------

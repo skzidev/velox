@@ -22,8 +22,7 @@ const pool = @import("../devices.zig");
 /// const rpm = rot.velocity();
 /// ```
 pub const Rotation = struct {
-    // SAFETY: this is overriden in .init()
-    var handle: ?*anyopaque = undefined;
+    handle: ?*anyopaque,
 
     /// Initializes a Rotation Sensor on the given port.
     ///
@@ -37,7 +36,7 @@ pub const Rotation = struct {
         port: u32,
     ) errors.DeviceInitError!Rotation {
         if (!errors.portIsValid(port))
-            return errors.DeviceInitError.InvalidPortError;
+            return errors.DeviceInitError.InvalidPort;
         const poolIdx: usize = @intCast(port);
         pool.claim(poolIdx) catch {
             return errors.DeviceInitError.PortUsed;

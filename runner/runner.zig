@@ -67,7 +67,7 @@ pub fn main(init: velox.Init) anyerror!void {
         init.io,
         std.fmt.allocPrint(
             allocator,
-            "ran {d} tests ({d} passed, {d} failed) in {d}ms ({f}% passing rate)\n",
+            "ran {d} tests ({d} passed, {d} failed) in {d}ms ({d}% passing rate)\n",
             .{
                 testFunctions.len,
                 pass,

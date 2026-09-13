@@ -20,8 +20,8 @@ const pool = @import("../devices.zig");
 /// const heading_rad = imu.heading(.radian);
 /// ```
 pub const Inertial = struct {
-    // SAFETY: this is overriden in .init()
-    var handle: ?*anyopaque = undefined;
+    handle: ?*anyopaque,
+    portno: usize,
 
     /// A quaternion representing the sensor's orientation in 3D space.
     ///
@@ -57,14 +57,19 @@ pub const Inertial = struct {
         port: u32,
     ) errors.DeviceInitError!Inertial {
         if (!errors.portIsValid(port))
-            return errors.DeviceInitError.InvalidPortError;
-        const poolIdx: usize = @intCast(port);
+            return errors.DeviceInitError.InvalidPort;
+        const poolIdx: usize = @intCast(port - 1);
         pool.claim(poolIdx) catch {
             return errors.DeviceInitError.PortUsed;
         };
         return Inertial{
             .handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
+            .portno = poolIdx,
         };
+    }
+
+    pub fn deinit(self: *const Inertial) !void {
+        try pool.unclaim(self.portno);
     }
 
     /// Resets and calibrates the inertial sensor.
