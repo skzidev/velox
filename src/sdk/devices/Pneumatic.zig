@@ -1,4 +1,4 @@
-const adi = @import("ADI.zig");
+const adiModule = @import("ADI.zig");
 
 /// A VEX pneumatic solenoid, connected via an ADI digital output port.
 ///
@@ -11,12 +11,13 @@ const adi = @import("ADI.zig");
 /// piston.extend();
 /// ```
 pub const Pneumatic = struct {
-    adi: adi.ADI,
+    // SAFETY: this is overriden in .init()
+    var adi: adiModule.ADI = undefined;
 
     /// Initializes a pneumatic solenoid on the given ADI port.
     pub fn init(port: u8, expander: u32) !Pneumatic {
         return .{
-            .adi = try adi.ADI.init(port, .digitalOut, expander),
+            .adi = try adiModule.ADI.init(port, .digitalOut, expander),
         };
     }
 

@@ -41,9 +41,12 @@ pub const ADI = struct {
         unknown = 255,
     };
 
-    expander: ?*anyopaque,
-    port: u32,
-    kind: ADIKind,
+    // SAFETY: this is overriden in .init()
+    var expander: ?*anyopaque = undefined;
+    // SAFETY: this is overriden in .init()
+    var port: u32 = undefined;
+    // SAFETY: this is overriden in .init()
+    var kind: ADIKind = undefined;
 
     /// Initializes an ADI port with the specified mode.
     ///
@@ -55,9 +58,9 @@ pub const ADI = struct {
     ///
     pub fn init(
         /// The ADI port letter (A–H).
-        port: u8,
+        portLetter: u8,
         /// The mode to configure the port in.
-        kind: ADIKind,
+        adiKind: ADIKind,
         /// The port of the expander (0 if it is on the brain)
         expanderPort: u32,
     ) errors.DeviceInitError!ADI {
@@ -66,12 +69,12 @@ pub const ADI = struct {
         // This just means that the user can pass this port in if they would like
         if (expanderPort >= 21) return errors.DeviceInitError.InvalidPortError;
         const validatedExpanderPort = if (expanderPort == 0) 21 else expanderPort - 1;
-        const expander = jmptbl.devices.vexDeviceGetByIndex(validatedExpanderPort);
+        const ex = jmptbl.devices.vexDeviceGetByIndex(validatedExpanderPort);
         jmptbl.adi.vexDeviceAdiPortConfigSet(expander, port, @enumFromInt(@intFromEnum(kind)));
         return ADI{
-            .expander = expander,
-            .port = port,
-            .kind = kind,
+            .expander = ex,
+            .port = portLetter,
+            .kind = adiKind,
         };
     }
 

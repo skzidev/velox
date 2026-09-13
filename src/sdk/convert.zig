@@ -25,6 +25,13 @@ pub fn distanceFromMillimeters(mm: f32, unit: units.LengthUnit) f32 {
     };
 }
 
+pub fn voltageFromVolts(v: f32, unit: units.VoltageUnit) f32 {
+    return switch (unit) {
+        .volts => v,
+        .mvolts => v * 1000,
+    };
+}
+
 /// Converts a rotational position expressed in degrees to the requested
 /// rotational unit.
 pub fn angleFromDegrees(degrees: f64, unit: units.RotationalUnit) f64 {

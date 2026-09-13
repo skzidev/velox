@@ -53,26 +53,27 @@ pub fn main(init: velox.Init) anyerror!void {
         );
         defer allocator.free(msg);
         testFunc.func() catch {
-            try stdout.writeStreamingAll(init.io, "FAIL\n");
+            try stdout.writeStreamingAll(init.io, "\x1b[31mFAIL\x1b[0m\n");
             fail += 1;
             continue;
         };
-        try stdout.writeStreamingAll(init.io, "PASS\n");
+        try stdout.writeStreamingAll(init.io, "\x1b[32mPASS\x1b[0m\n");
         pass += 1;
     }
 
     const end = init.io.vtable.now(null, .awake);
 
-    try velox.V5Io.File.stdout().writeStreamingAll(
+    try stdout.writeStreamingAll(
         init.io,
         std.fmt.allocPrint(
             allocator,
-            "ran {d} tests ({d} passed, {d} failed) in {d}ms\n",
+            "ran {d} tests ({d} passed, {d} failed) in {d}ms ({f}% passing rate)\n",
             .{
                 testFunctions.len,
                 pass,
                 fail,
                 end.toMilliseconds() - start.toMilliseconds(),
+                pass / (pass + fail),
             },
         ) catch "testing complete (cannot format test statistics)\n",
     );

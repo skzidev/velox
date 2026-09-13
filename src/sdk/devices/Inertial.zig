@@ -20,7 +20,8 @@ const pool = @import("../devices.zig");
 /// const heading_rad = imu.heading(.radian);
 /// ```
 pub const Inertial = struct {
-    _handle: ?*anyopaque,
+    // SAFETY: this is overriden in .init()
+    var handle: ?*anyopaque = undefined;
 
     /// A quaternion representing the sensor's orientation in 3D space.
     ///
@@ -62,7 +63,7 @@ pub const Inertial = struct {
             return errors.DeviceInitError.PortUsed;
         };
         return Inertial{
-            ._handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
+            .handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
         };
     }
 
@@ -76,7 +77,7 @@ pub const Inertial = struct {
     /// imu.reset();  // blocks for ~2 seconds
     /// ```
     pub fn reset(self: *const Inertial) void {
-        jmptbl.imu.vexDeviceImuReset(self._handle);
+        jmptbl.imu.vexDeviceImuReset(self.handle);
     }
 
     /// Returns the sensor's orientation as a quaternion.
@@ -89,7 +90,7 @@ pub const Inertial = struct {
     /// ```
     pub fn quat(self: *const Inertial) !InertialQuaternion {
         const quaternion: InertialQuaternion = .{};
-        jmptbl.imu.vexDeviceImuQuaternionGet(self._handle, &quaternion);
+        jmptbl.imu.vexDeviceImuQuaternionGet(self.handle, &quaternion);
         return quaternion;
     }
 
@@ -110,7 +111,7 @@ pub const Inertial = struct {
     /// const rad = imu.heading(.radian);
     /// ```
     pub fn heading(self: *const Inertial, unit: units.RotationalUnit) f64 {
-        const deg = jmptbl.imu.vexDeviceImuHeadingGet(self._handle);
+        const deg = jmptbl.imu.vexDeviceImuHeadingGet(self.handle);
         return convert.angleFromDegrees(deg, unit);
     }
 };

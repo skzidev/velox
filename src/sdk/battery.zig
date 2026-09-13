@@ -3,7 +3,7 @@ const units = @import("./units.zig");
 const jmptbl = @import("velox_jumptable");
 
 /// Interface for reading the V5 Brain's battery level.
-///
+///renamed
 /// The V5 Brain's built-in battery provides power to the brain and all
 /// connected devices. This module provides access to battery telemetry.
 ///

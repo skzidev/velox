@@ -9,7 +9,6 @@ pub fn validateUserProgram(comptime mod: anytype) void {
     // validate main
     // TODO maybe don't require an error union?
     const fnInfo = @typeInfo(@TypeOf(mod.main)).@"fn";
-    //const return_type = fnInfo.return_type orelse @compileError("main should return a void error union");
 
     if (fnInfo.params.len < 1 or fnInfo.params[0].type != sdk.Init)
         @compileError("main should accept a juicy main");

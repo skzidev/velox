@@ -42,20 +42,20 @@ pub const Controller = struct {
     /// The controller kind (master or partner).
     kind: ControllerKind,
 
-    a: Input(.a) = .{ ._idx = .a, ._owner = .master },
-    b: Input(.b) = .{ ._idx = .b, ._owner = .master },
-    x: Input(.x) = .{ ._idx = .x, ._owner = .master },
-    y: Input(.y) = .{ ._idx = .y, ._owner = .master },
+    a: Input(.a) = .{ ._idx = .a, .owner = .master },
+    b: Input(.b) = .{ ._idx = .b, .owner = .master },
+    x: Input(.x) = .{ ._idx = .x, .owner = .master },
+    y: Input(.y) = .{ ._idx = .y, .owner = .master },
 
-    up: Input(.up) = .{ ._idx = .up, ._owner = .master },
-    down: Input(.down) = .{ ._idx = .down, ._owner = .master },
-    left: Input(.left) = .{ ._idx = .left, ._owner = .master },
-    right: Input(.right) = .{ ._idx = .right, ._owner = .master },
+    up: Input(.up) = .{ ._idx = .up, .owner = .master },
+    down: Input(.down) = .{ ._idx = .down, .owner = .master },
+    left: Input(.left) = .{ ._idx = .left, .owner = .master },
+    right: Input(.right) = .{ ._idx = .right, .owner = .master },
 
-    axis1: Input(.axis1) = .{ ._idx = .axis1, ._owner = .master },
-    axis2: Input(.axis2) = .{ ._idx = .axis2, ._owner = .master },
-    axis3: Input(.axis3) = .{ ._idx = .axis3, ._owner = .master },
-    axis4: Input(.axis4) = .{ ._idx = .axis4, ._owner = .master },
+    axis1: Input(.axis1) = .{ ._idx = .axis1, .owner = .master },
+    axis2: Input(.axis2) = .{ ._idx = .axis2, .owner = .master },
+    axis3: Input(.axis3) = .{ ._idx = .axis3, .owner = .master },
+    axis4: Input(.axis4) = .{ ._idx = .axis4, .owner = .master },
 
     /// Identifies whether this is the master or partner controller.
     ///
@@ -119,7 +119,7 @@ pub const Controller = struct {
         /// The button identifier.
         _idx: ControllerInput,
         /// The controller this button belongs to.
-        _owner: ControllerKind,
+        owner: ControllerKind,
 
         /// Returns `true` if the button is currently pressed.
         ///
@@ -129,7 +129,7 @@ pub const Controller = struct {
         /// }
         /// ```
         pub fn pressed(self: *const Button) bool {
-            return jmptbl.controller.vexControllerGet(@enumFromInt(@intFromEnum(self._owner)), @enumFromInt(@intFromEnum(self._idx))) == 1;
+            return jmptbl.controller.vexControllerGet(@enumFromInt(@intFromEnum(self.owner)), @enumFromInt(@intFromEnum(self._idx))) == 1;
         }
     };
 
@@ -139,7 +139,7 @@ pub const Controller = struct {
         /// The axis identifier.
         _idx: ControllerInput,
         /// The controller this axis belongs to.
-        _owner: ControllerKind,
+        owner: ControllerKind,
 
         /// Returns the joystick axis value (-127 to 127).
         ///
@@ -149,7 +149,7 @@ pub const Controller = struct {
         /// const value = controller.Input(.axis3).get();
         /// ```
         pub fn get(self: *const Axis) i32 {
-            return jmptbl.controller.vexControllerGet(@enumFromInt(@intFromEnum(self._owner)), @enumFromInt(@intFromEnum(self._idx)));
+            return jmptbl.controller.vexControllerGet(@enumFromInt(@intFromEnum(self.owner)), @enumFromInt(@intFromEnum(self._idx)));
         }
     };
 

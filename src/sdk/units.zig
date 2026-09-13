@@ -1,3 +1,19 @@
+const std = @import("std");
+
+fn EnumMerge(a: type, b: type) type {
+    const aFields = std.meta.fieldNames(a);
+    const bFields = std.meta.fieldNames(b);
+
+    const len = bFields.len + aFields.len;
+    // SAFETY: this is overwritten immediately after
+    var arr: [len]usize = undefined;
+    inline for (0..len) |i| {
+        arr[i] = i;
+    }
+
+    return @Enum(u32, .exhaustive, aFields ++ bFields, &arr);
+}
+
 /// Units for motor rotational speed.
 ///
 /// Used with [`Motor.spinAt`](root.Motor.spinAt) to specify the speed
@@ -9,21 +25,14 @@
 /// | `.mvolts` | Voltage in millivolts (V5 range: -12000 to 12000) |
 /// | `.volts` | Voltage in volts (V5 range: -12.0 to 12.0) |
 /// | `.percent` | Percentage of max speed (-100 to 100) |
-pub const MotorUnit = enum {
+pub const MotorUnit = EnumMerge(enum {
     /// Revolutions per minute. The motor will attempt to hold this speed
     /// using its internal PID controller.
     rpm,
-    /// Voltage in millivolts. The V5 motor accepts integer values from
-    /// -12000 to 12000 mV.
-    mvolts,
-    /// Voltage in volts. The V5 motor accepts values from -12.0 to 12.0 V.
-    /// Internally converted to millivolts (`volts * 1000`) before being
-    /// sent to the hardware.
-    volts,
     /// Percentage of maximum speed. Range: -100 to 100. Internally
     /// converted to millivolts before being sent to the hardware.
     percent,
-};
+}, VoltageUnit);
 
 /// Units for temperature readings.
 ///
@@ -80,4 +89,14 @@ pub const RotationalUnit = enum {
     turn,
     /// Radians. One full rotation = 2π radians.
     radian,
+};
+
+pub const VoltageUnit = enum {
+    /// Voltage in volts. The V5 motor accepts values from -12.0 to 12.0 V.
+    /// Internally converted to millivolts (`volts * 1000`) before being
+    /// sent to the hardware.
+    volts,
+    /// Voltage in millivolts. The V5 motor accepts integer values from
+    /// -12000 to 12000 mV.
+    mvolts,
 };
