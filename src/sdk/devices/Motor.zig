@@ -83,7 +83,7 @@ pub const Motor = struct {
     };
 
     pub fn direction(self: *const Motor) Direction {
-        return jmptbl.motor.vexDeviceMotorReverseFlagGet(self.handle);
+        return @intFromEnum(jmptbl.motor.vexDeviceMotorReverseFlagGet(self.handle));
     }
 
     pub fn setDirection(self: *const Motor, spinDirection: Direction) void {
