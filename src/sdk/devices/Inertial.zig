@@ -2,6 +2,7 @@ const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
 const convert = @import("../convert.zig");
+const pool = @import("../devices.zig");
 
 /// A VEX V5 Inertial Sensor (IMU) — provides orientation, heading,
 /// and quaternion data for tracking robot rotation.
@@ -56,6 +57,10 @@ pub const Inertial = struct {
     ) errors.DeviceInitError!Inertial {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
+        const poolIdx: usize = @intCast(port);
+        pool.claim(poolIdx) catch {
+            return errors.DeviceInitError.PortUsed;
+        };
         return Inertial{
             ._handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
         };
