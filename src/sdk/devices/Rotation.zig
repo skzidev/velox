@@ -32,7 +32,7 @@ pub const Rotation = struct {
     /// var rot = velox_sdk.Rotation.init(3);
     /// ```
     pub fn init(
-        /// The smart port number (1–20).
+        /// The smart port number (1–21).
         port: u32,
     ) errors.DeviceInitError!Rotation {
         if (!errors.portIsValid(port))
