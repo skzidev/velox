@@ -2,6 +2,7 @@ const jmptbl = @import("velox_jumptable");
 const units = @import("../units.zig");
 const errors = @import("../error.zig");
 const convert = @import("../convert.zig");
+const pool = @import("../devices.zig");
 
 /// A VEX V5 Distance Sensor (276-4852).
 ///
@@ -37,6 +38,10 @@ pub const Distance = struct {
     ) errors.DeviceInitError!Distance {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPortError;
+        const poolIdx: usize = @intCast(port);
+        pool.claim(poolIdx) catch {
+            return errors.DeviceInitError.PortUsed;
+        };
         return Distance{
             ._handle = jmptbl.devices.vexDeviceGetByIndex(port - 1),
         };
