@@ -65,16 +65,10 @@ Velox builds on their research into the Brain's memory model and configuration.
 
 ## Tests
 
-<<<<<<< HEAD
 > [!WARNING]
 > When cloning this repostiory to run the unit tests, preserve symlinks. Not doing this will break the unit tests for the umm allocator. Especially on Windows.
 
 Velox's unit tests run on the brain hardware. To run them yourself, plug in a brain and run the command:
-=======
-**When cloning this repository, preserve symlinks.**
-
-Tests are written in Zig's testing framework, and their results are logged over serial. They run inside of a custom test runner which is itself written using Velox as a program. To run them yourself:
->>>>>>> 6a4b60a73a2693fa13d6f92df46ef594e6751754
 
 ```sh
 zig build test
