@@ -39,7 +39,7 @@ pub const Distance = struct {
         if (!errors.portIsValid(port))
             return errors.DeviceInitError.InvalidPort;
         const poolIdx: usize = @intCast(port);
-        pool.claim(poolIdx) catch {
+        pool.claim(poolIdx - 1) catch {
             return errors.DeviceInitError.PortUsed;
         };
         return Distance{

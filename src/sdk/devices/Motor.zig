@@ -157,7 +157,7 @@ pub const Motor = struct {
         const poolIdx: usize = @intCast(port);
         // we know it's a valid port because we already validated it so the only reason that a pool
         // claim could throw an error is if the port is used
-        pool.claim(poolIdx) catch {
+        pool.claim(poolIdx - 1) catch {
             return errors.DeviceInitError.PortUsed;
         };
         const handle = jmptbl.devices.vexDeviceGetByIndex(port - 1);
