@@ -82,7 +82,7 @@ pub const Rotation = struct {
     /// }
     /// ```
     pub fn isReversed(self: *const Rotation) bool {
-        return jmptbl.rotation.vexDeviceAbsEncReverseFlagGet(self.handle);
+        return jmptbl.rotation.vexDeviceAbsEncReverseFlagGet(self.handle) == 1;
     }
 
     /// Sets whether the sensor's direction is reversed.
@@ -95,7 +95,7 @@ pub const Rotation = struct {
     /// rot.setReversed(true);
     /// ```
     pub fn setReversed(self: *const Rotation, reversed: bool) void {
-        jmptbl.rotation.vexDeviceAbsEncReverseFlagSet(self.handle, reversed);
+        jmptbl.rotation.vexDeviceAbsEncReverseFlagSet(self.handle, @intFromBool(reversed));
     }
 
     /// Returns the sensor's cumulative position in encoder ticks.
