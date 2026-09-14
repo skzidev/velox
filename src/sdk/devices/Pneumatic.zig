@@ -32,11 +32,11 @@ pub const Pneumatic = struct {
 
     /// Toggles the pneumatic cylinder between extended and retracted.
     pub fn toggle(self: *const Pneumatic) void {
-        self.adi.set(!self.adi.get());
+        self.adi.set(@intFromBool(!(self.adi.get() == 1)));
     }
 
     /// Sets the pneumatic cylinder to the given state (`true` = extend, `false` = retract).
     pub fn set(self: *const Pneumatic, v: bool) void {
-        self.adi.set(v);
+        self.adi.set(@intFromBool(v));
     }
 };
