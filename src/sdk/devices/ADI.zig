@@ -86,7 +86,7 @@ pub const ADI = struct {
     /// ```zig
     /// const value = adi.get();
     /// ```
-    pub fn get(self: *const ADI) u32 {
+    pub fn get(self: *const ADI) i32 {
         return jmptbl.adi.vexDeviceAdiValueGet(self.expander, self.port);
     }
 
