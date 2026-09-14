@@ -94,7 +94,12 @@ pub const Inertial = struct {
     /// // q.x, q.y, q.z, q.w
     /// ```
     pub fn quat(self: *const Inertial) !InertialQuaternion {
-        const quaternion: InertialQuaternion = .{};
+        const quaternion: InertialQuaternion = .{
+            .x = 0,
+            .y = 0,
+            .z = 0,
+            .w = 0,
+        };
         jmptbl.imu.vexDeviceImuQuaternionGet(self.handle, &quaternion);
         return quaternion;
     }
