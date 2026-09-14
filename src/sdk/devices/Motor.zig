@@ -257,7 +257,7 @@ pub const Motor = struct {
     /// }
     /// ```
     pub fn kind(self: *const Motor) MotorKind {
-        return jmptbl.motor.vexDeviceMotorTypeGet(self.handle);
+        return @enumFromInt(jmptbl.motor.vexDeviceMotorTypeGet(self.handle));
     }
 
     /// Returns the motor's current efficiency as a percentage (0–100).
