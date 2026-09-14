@@ -109,7 +109,7 @@ pub const Rotation = struct {
     /// ```
     pub fn pos(self: *const Rotation, unit: units.RotationalUnit) i32 {
         // TODO add units
-        return convert.angleFromDegrees(jmptbl.rotation.vexDeviceAbsEncPositionGet(self._handle) / 100, unit);
+        return convert.angleFromDegrees(@floatFromInt(jmptbl.rotation.vexDeviceAbsEncPositionGet(self._handle) / 100), unit);
     }
 
     /// Sets the sensor's position to the given value.
