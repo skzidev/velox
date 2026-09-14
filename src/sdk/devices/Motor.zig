@@ -216,7 +216,7 @@ pub const Motor = struct {
     /// motor.setBrakingMode(.coast);  // coast freely
     /// ```
     pub fn setBrakingMode(self: *const Motor, mode: BrakeMode) void {
-        jmptbl.motor.vexDeviceMotorBrakeModeSet(self.handle, mode);
+        jmptbl.motor.vexDeviceMotorBrakeModeSet(self.handle, @enumFromInt(@intFromEnum(mode)));
     }
 
     /// Returns the motor's encoder position in the specified rotational
