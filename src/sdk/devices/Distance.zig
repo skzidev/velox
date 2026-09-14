@@ -75,7 +75,7 @@ pub const Distance = struct {
         unit: units.LengthUnit,
     ) f32 {
         const mm = jmptbl.distance.vexDeviceDistanceDistanceGet(self.handle);
-        return convert.distanceFromMillimeters(mm, unit);
+        return convert.distanceFromMillimeters(@floatFromInt(mm), unit);
     }
 
     /// Returns the sensor's confidence in the current distance reading
