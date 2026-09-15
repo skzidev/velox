@@ -18,10 +18,11 @@ pub const Motor = struct {
         _ = value;
     }
 
-    pub fn init(motorPort: port.SmartPort, dir: Direction, cart: Cartridge) Motor {
+    pub fn init(motorPort: port.SmartPort, dir: Direction, cart: Cartridge, bm: BrakeMode) Motor {
         const dev = jmptbl.devices.vexDeviceGetByIndex(motorPort.idx);
         jmptbl.motor.vexDeviceMotorReverseFlagSet(dev, @intFromBool(dir == .reverse));
         jmptbl.motor.vexDeviceMotorGearingSet(dev, @enumFromInt(@intFromEnum(cart)));
+        jmptbl.motor.vexDeviceMotorBrakeModeSet(dev, @enumFromInt(@intFromEnum(bm)));
         handleMod.handles[motorPort.idx] = dev;
         return .{
             .port = motorPort,
