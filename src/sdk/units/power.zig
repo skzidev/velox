@@ -13,4 +13,16 @@ pub const PowerUnit = union(enum) {
             .percent = p,
         };
     }
+
+    pub fn fromVolt(v: f64) PowerUnit {
+        return .{
+            .volt = v,
+        };
+    }
+
+    pub fn fromMillivolt(mv: i32) PowerUnit {
+        return .{
+            .mvolt = mv,
+        };
+    }
 };
