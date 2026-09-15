@@ -240,7 +240,9 @@ fn serialWriteAll(data: []const u8) error{InputOutput}!usize {
         jmptbl.task.vexTaskSleep(1);
         wait_ms += 1;
     }
-    serialFlush();
+    if (jmptbl.serial.vexSerialWriteFree(serial_channel) >= 2048) {
+        serialFlush();
+    }
     return written;
 }
 
