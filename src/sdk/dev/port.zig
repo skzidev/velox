@@ -5,7 +5,8 @@ pub const SmartPort = struct {
     portNo: usize,
 
     pub fn smart(comptime portNo: usize) SmartPort {
-        if (portNo == 0 or portNo > 21) @compileError(std.fmt.comptimePrint("Invalid port '{d}', port must be 1-21", .{portNo}));
+        const src = @src();
+        if (portNo == 0 or portNo > 21) @compileError(std.fmt.comptimePrint("[{s}:{d}:{d}]: Invalid port '{d}', port must be a valid SmartPort (1-21)", .{ src.file, src.line, src.column, portNo }));
         return .{
             .idx = portNo - 1,
             .portNo = portNo,

@@ -1,13 +1,13 @@
 const jmptbl = @import("velox_jumptable");
 const pu = @import("../../units/power.zig");
-const handles = @import("../../internal/handles.zig").handles;
+const handleMod = @import("../../internal/handles.zig");
 const port = @import("../port.zig");
 
 pub const Motor = struct {
     port: port.SmartPort,
 
     pub fn direction(self: *const Motor) Direction {
-        return @enumFromInt(jmptbl.Motor.vexDeviceMotorReverseFlagGet(handles[self.port.idx]));
+        return @enumFromInt(jmptbl.Motor.vexDeviceMotorReverseFlagGet(handleMod.handles[self.port.idx]));
     }
 
     pub fn spin(
@@ -18,9 +18,11 @@ pub const Motor = struct {
         _ = value;
     }
 
-    pub fn init(motorPort: port.SmartPort, _: Direction, _: Cartridge) Motor {
+    pub fn init(motorPort: port.SmartPort, dir: Direction, cart: Cartridge) Motor {
         const dev = jmptbl.devices.vexDeviceGetByIndex(motorPort.idx);
-        handles[motorPort.idx] = dev;
+        jmptbl.motor.vexDeviceMotorReverseFlagSet(dev, @intFromBool(dir == .reverse));
+        jmptbl.motor.vexDeviceMotorGearingSet(dev, @enumFromInt(@intFromEnum(cart)));
+        handleMod.handles[motorPort.idx] = dev;
         return .{
             .port = motorPort,
         };

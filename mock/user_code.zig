@@ -9,4 +9,5 @@ fn teleop() void {}
 /// Example user program for the Velox SDK.
 pub fn main(init: velox.Init) !void {
     try stdout.writeStreamingAll(init.io, "booting up...\n");
+    _ = velox.Motor.init(.smart(21), .forward, .green);
 }
