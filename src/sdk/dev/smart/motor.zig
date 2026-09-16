@@ -1,5 +1,6 @@
 const jmptbl = @import("velox_jumptable");
 const pu = @import("../../units/power.zig");
+const au = @import("../../units/angle.zig");
 const handleMod = @import("../../internal/handles.zig");
 const port = @import("../port.zig");
 
@@ -7,18 +8,26 @@ pub const Motor = struct {
     port: port.SmartPort,
 
     pub fn direction(self: *const Motor) Direction {
-        return @enumFromInt(jmptbl.Motor.vexDeviceMotorReverseFlagGet(handleMod.handles[self.port.idx]));
+        return @enumFromInt(jmptbl.motor.vexDeviceMotorReverseFlagGet(handleMod.handles[self.port.idx]));
+    }
+
+    pub fn stop(self: *const Motor) void {
+        jmptbl.motor.vexDeviceMotorVelocitySet(handleMod.handles[self.port.idx], 0);
+    }
+
+    pub fn position(self: *const Motor) au.AngleUnits {
+        return .fromDegree(jmptbl.motor.vexDeviceMotorPositionGet(handleMod.handles[self.port.idx]));
     }
 
     pub fn spin(
         self: *const Motor,
         value: pu.PowerUnit,
     ) void {
-        _ = self;
-        _ = value;
+        jmptbl.motor.vexDeviceMotorVoltageSet(handleMod.handles[self.port.idx], value.volts);
     }
 
     pub fn init(motorPort: port.SmartPort, dir: Direction, cart: Cartridge, bm: BrakeMode) Motor {
+        // TODO check if device is of valid type
         const dev = jmptbl.devices.vexDeviceGetByIndex(motorPort.idx);
         jmptbl.motor.vexDeviceMotorReverseFlagSet(dev, @intFromBool(dir == .reverse));
         jmptbl.motor.vexDeviceMotorGearingSet(dev, @enumFromInt(@intFromEnum(cart)));
