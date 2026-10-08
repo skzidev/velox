@@ -3,6 +3,7 @@
 
 // zlint-disable unused-decls -- __velox_header__ and others must be there to make the brain boot the image
 
+const errHandler = @import("error.zig");
 const std = @import("std");
 const umm = @import("velox_umm");
 const velox_sdk = @import("velox_sdk");
@@ -24,7 +25,7 @@ pub const std_options = std.Options{
     .networking = false,
 };
 
-// don't compile an invalid user program
+// don't compile an invalid user program and include other modules into the binary
 comptime {
     validation.validateUserProgram(user_code);
 
@@ -181,7 +182,7 @@ fn zmain() noreturn {
     };
 
     user_code.main(init) catch {
-        velox_sdk.V5Io.File.stdout().writeStreamingAll(init.io, "User main returned error") catch @panic("Double-fault");
+        velox_sdk.V5Io.File.stdout().writeStreamingAll(init.io, "User main returned error") catch @panic("Main error caused double-fault.");
         jmptbl.system.vexSystemExitRequest();
     };
     main_finished = true;

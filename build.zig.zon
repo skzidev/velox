@@ -4,8 +4,8 @@
     .fingerprint = 0xe3685d5fe413aa55,
     .dependencies = .{
         .velox_jumptable = .{
-            .url = "git+https://github.com/skzidev/velox-jumptable#8a619fe255c23c224324c167038c62879a54681d",
-            .hash = "velox_jumptable-0.0.1-ZP9ZZ8zABAD2hXScM_Cj0fFLQTLRo3ldTrVFIZ7Wn6Ci",
+            .url = "git+https://github.com/skzidev/velox-jumptable#5604ec6a109f4d784cb612659323d8650f634289",
+            .hash = "velox_jumptable-0.0.1-ZP9ZZ1PEBADWvU_1MeuiClCbtJKK64Ro20gkVOxYLkvt",
         },
     },
     .paths = .{

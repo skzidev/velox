@@ -7,10 +7,10 @@
 const std = @import("std");
 
 const jmptbl = @import("velox_jumptable");
-const types = jmptbl.types;
 const ports = @import("../ports.zig");
 const units = @import("../units.zig");
 const dev = @import("../internal/dev.zig");
+const types = jmptbl.types;
 const convert = @import("../internal/convert.zig");
 
 /// A configured ADI pin. Owned privately by each public device.
