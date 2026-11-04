@@ -10,7 +10,7 @@ pub fn validateUserProgram(comptime mod: anytype) void {
     // TODO maybe don't require an error union?
     const fnInfo = @typeInfo(@TypeOf(mod.main)).@"fn";
 
-    if (fnInfo.params.len < 1 or fnInfo.params[0].type != sdk.Init)
+    if (fnInfo.param_types.len < 1 or fnInfo.param_types[0] != sdk.Init)
         @compileError("main should accept a juicy main");
 }
 

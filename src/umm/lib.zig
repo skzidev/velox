@@ -29,7 +29,7 @@ pub fn UmmAllocator(comptime config: Config) type {
                 .heap = @as([*]Block.Storage, @ptrCast(@alignCast(buf.ptr)))[0..(buf.len / @sizeOf(Block.Storage))],
             };
 
-            if (self.heap.len > std.math.maxInt(std.meta.Int(.unsigned, @typeInfo(BlockIndexType).int.bits - 1)))
+            if (self.heap.len > std.math.maxInt(BlockIndexType) >> 1)
                 return error.BufferTooBig;
 
             @memset(buf, 0);
@@ -474,7 +474,7 @@ fn umm_test_type(comptime T: type, comptime free_order: FreeOrder) !void {
             }
         },
         .random => {
-            var ascon = std.Random.Ascon.init([_]u8{0x42} ** 32);
+            var ascon = std.Random.Ascon.init(@as([32]u8, @splat(0x42)));
             const rand = ascon.random();
 
             while (list.getLastOrNull()) |_| {
@@ -541,7 +541,7 @@ fn umm_test_random_size(comptime free_order: FreeOrder) !void {
     var list = std.ArrayList([]u8).empty;
     defer list.deinit(gpa);
 
-    var ascon = std.Random.Ascon.init([_]u8{0x42} ** 32);
+    var ascon = std.Random.Ascon.init(@as([32]u8, @splat(0x42)));
     const rand = ascon.random();
 
     var i: usize = 0;
@@ -595,7 +595,7 @@ test "free_random_allocations_randomly" {
 //     var list = std.ArrayList([]u8).init(if (@import("builtin").is_test) testing.allocator else std.heap.page_allocator);
 //     defer list.deinit();
 
-//     var ascon = std.rand.Ascon.init([_]u8{0x42} ** 32);
+//     var ascon = std.rand.Ascon.init(@as([32]u8, @splat(0x42)));
 //     const rand = ascon.random();
 
 //     var i: usize = 0;

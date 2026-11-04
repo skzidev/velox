@@ -31,26 +31,47 @@ const VeloxModules = struct {
     jumptable: *std.Build.Dependency,
 };
 
+/// Opens a `LazyPath` for reading during the configure phase.
+///
+/// Only paths that exist before the build runs are supported. The path is
+/// registered as a configure dependency so that changes to it invalidate the
+/// cached build configuration.
+fn openLazyFile(b: *std.Build, lazy_path: std.Build.LazyPath) !std.Io.File {
+    const io = b.graph.io;
+    b.dependOnFileContents(lazy_path);
+    return switch (lazy_path) {
+        .src_path => |sp| sp.owner.root.openFile(io, sp.sub_path, .{ .mode = .read_only }),
+        .dependency => |dep| dep.dependency.builder.root.openFile(io, dep.sub_path, .{ .mode = .read_only }),
+        .cwd_relative => |p| std.Io.Dir.cwd().openFile(io, p, .{ .mode = .read_only }),
+        .relative => |rel| switch (rel.base) {
+            .build_root => b.root.openFile(io, rel.sub_path, .{ .mode = .read_only }),
+            .cwd => std.Io.Dir.cwd().openFile(io, rel.sub_path, .{ .mode = .read_only }),
+            else => @panic("unsupported lazy path base for configure-time read"),
+        },
+        .generated => @panic("cannot read a generated file during the configure phase"),
+    };
+}
+
+/// Reads the entire contents of a `LazyPath` during the configure phase.
+fn readLazyFile(b: *std.Build, lazy_path: std.Build.LazyPath) ![]u8 {
+    const io = b.graph.io;
+    const file = try openLazyFile(b, lazy_path);
+    defer file.close(io);
+
+    const contents = try b.allocator.alloc(u8, try file.length(io));
+    _ = try file.readPositionalAll(io, contents, 0);
+    return contents;
+}
+
 /// Concatenates the Velox `linker.ld` and the jumptable `addrs.ld` into
 /// a single linker script (`ls.ld`) that the linker step consumes.
 ///
 /// The resulting script defines the memory layout (USER_RAM at
 /// `0x03800000`), stack regions, and section placements.
 fn generateLinkerScript(b: *std.Build, velox_root: std.Build.LazyPath, jumptable: *std.Build.Dependency) !std.Build.LazyPath {
-    // initialize IO for linker script read
-    var threaded: std.Io.Threaded = .init_single_threaded;
-    const io = threaded.io();
-    defer threaded.deinit();
-
     // read the linker scripts into ls1 (velox) and ls2 (jumptable)
-    const veloxLinkerScript = try std.Io.Dir.cwd().openFile(io, velox_root.path(b, "linker.ld").getPath(b), .{ .mode = .read_only });
-    const jmptblLinkerScript = try std.Io.Dir.cwd().openFile(io, jumptable.path("addrs.ld").getPath(b), .{ .mode = .read_only });
-    const ls1 = try b.allocator.alloc(u8, try veloxLinkerScript.length(io));
-    const ls2 = try b.allocator.alloc(u8, try jmptblLinkerScript.length(io));
-    _ = try veloxLinkerScript.readPositionalAll(io, ls1, 0);
-    _ = try jmptblLinkerScript.readPositionalAll(io, ls2, 0);
-    veloxLinkerScript.close(io);
-    jmptblLinkerScript.close(io);
+    const ls1 = try readLazyFile(b, velox_root.path(b, "linker.ld"));
+    const ls2 = try readLazyFile(b, jumptable.path("addrs.ld"));
 
     // write the linker script
     const ls = b.addWriteFiles();
@@ -63,24 +84,36 @@ fn generateLinkerScript(b: *std.Build, velox_root: std.Build.LazyPath, jumptable
 /// All modules target ARM Cortex-A9, freestanding, EABI hard-float.
 /// The SDK and core modules receive the jumptable import; the core
 /// module also receives the SDK, umm, and build manifest imports.
-fn getVeloxModules(b: *std.Build, optimize: std.builtin.OptimizeMode, velox_root: std.Build.LazyPath) VeloxModules {
+fn getVeloxModules(
+    b: *std.Build,
+    optimize: std.builtin.OptimizeMode,
+    velox_root: std.Build.LazyPath,
+) VeloxModules {
     const target = getV5Target(b);
-
-    const velox = b.addModule("velox_core", .{ .root_source_file = velox_root.path(b, "src/kernel/boot.zig"), .target = target, .optimize = optimize });
-    const umm = b.createModule(.{ .root_source_file = velox_root.path(b, "src/umm/lib.zig"), .target = target, .optimize = optimize });
-    const sdk = b.addModule("velox_sdk", .{ .root_source_file = velox_root.path(b, "src/sdk/root.zig"), .target = target, .optimize = optimize });
     const jumptable = b.dependency("velox_jumptable", .{});
+
+    // Reuse modules if they were already created earlier in this build
+    // invocation (e.g. both the firmware and the test runner need them).
+    const velox = b.modules.get("velox_core") orelse blk: {
+        const mod = b.addModule("velox_core", .{ .root_source_file = velox_root.path(b, "src/kernel/boot.zig"), .target = target, .optimize = optimize });
+        const manifest = b.createModule(.{
+            .root_source_file = velox_root.path(b, "build.zig.zon"),
+            .optimize = optimize,
+            .target = target,
+        });
+        mod.addImport("manifest", manifest);
+        mod.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
+        break :blk mod;
+    };
+    const umm = b.modules.get("velox_umm") orelse b.addModule("velox_umm", .{ .root_source_file = velox_root.path(b, "src/umm/lib.zig"), .target = target, .optimize = optimize });
+    const sdk = b.modules.get("velox_sdk") orelse blk: {
+        const mod = b.addModule("velox_sdk", .{ .root_source_file = velox_root.path(b, "src/sdk/root.zig"), .target = target, .optimize = optimize });
+        mod.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
+        break :blk mod;
+    };
 
     velox.addImport("velox_sdk", sdk);
     velox.addImport("velox_umm", umm);
-    velox.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
-    const manifest = b.createModule(.{
-        .root_source_file = velox_root.path(b, "build.zig.zon"),
-        .optimize = optimize,
-        .target = target,
-    });
-    velox.addImport("manifest", manifest);
-    sdk.addImport("velox_jumptable", jumptable.module("velox_jumptable"));
 
     return .{
         .core = velox,
@@ -239,7 +272,7 @@ pub fn addUpload(
     if (slot < 1 or slot > 8) {
         return VeloxBuildError.NonexistantSlot;
     }
-    const copy = exe.addObjCopy(.{ .format = .bin });
+    const copy = exe.addObjCopy(.{ .format = .binary });
     const cmd = b.addSystemCommand(&.{
         "cargo-v5",
         "v5",

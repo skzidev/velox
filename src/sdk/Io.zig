@@ -344,6 +344,9 @@ fn performOperation(self: *V5Io, operation: std.Io.Operation) std.Io.Operation.R
         },
         .device_io_control => .{ .device_io_control = -1 },
         .net_receive => .{ .net_receive = .{ error.NetworkDown, 0 } },
+        .net_send => .{ .net_send = .{ error.NetworkDown, 0 } },
+        .net_read => .{ .net_read = error.NetworkDown },
+        .net_write => .{ .net_write = error.NetworkDown },
     };
 }
 
@@ -633,13 +636,13 @@ pub const V5Io = struct {
         .processSetCurrentDir = std.Io.failingProcessSetCurrentDir,
         .processSetCurrentPath = std.Io.failingProcessSetCurrentPath,
         .processReplace = std.Io.failingProcessReplace,
-        .processReplacePath = std.Io.failingProcessReplacePath,
         .processSpawn = std.Io.failingProcessSpawn,
-        .processSpawnPath = std.Io.failingProcessSpawnPath,
         .childWait = std.Io.unreachableChildWait,
         .childKill = std.Io.unreachableChildKill,
 
         .progressParentFile = std.Io.failingProgressParentFile,
+        .inheritParentDir = std.Io.failingInheritParentDir,
+        .inheritParentFile = std.Io.failingInheritParentFile,
 
         .now = now,
         .clockResolution = clockResolution,
@@ -655,9 +658,6 @@ pub const V5Io = struct {
         .netListenUnix = std.Io.failingNetListenUnix,
         .netConnectUnix = std.Io.failingNetConnectUnix,
         .netSocketCreatePair = std.Io.failingNetSocketCreatePair,
-        .netSend = std.Io.failingNetSend,
-        .netRead = std.Io.failingNetRead,
-        .netWrite = std.Io.failingNetWrite,
         .netWriteFile = std.Io.failingNetWriteFile,
         .netClose = std.Io.unreachableNetClose,
         .netShutdown = std.Io.failingNetShutdown,
@@ -825,6 +825,9 @@ fn operate(
         },
         .device_io_control => .{ .device_io_control = -1 },
         .net_receive => .{ .net_receive = .{ error.NetworkDown, 0 } },
+        .net_send => .{ .net_send = .{ error.NetworkDown, 0 } },
+        .net_read => .{ .net_read = error.NetworkDown },
+        .net_write => .{ .net_write = error.NetworkDown },
     };
 }
 
