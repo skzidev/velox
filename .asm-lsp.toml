@@ -1,0 +1,7 @@
+[default_config]
+assembler = "gas"
+instruction_set = "arm"
+
+[default_config.opts]
+compiler = "zig"
+# diagnostics = true
