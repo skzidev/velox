@@ -17,6 +17,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .root_source_file = b.path("src/kernel/root.zig"),
     });
+    kernel.addAnonymousImport("umm", .{ .root_source_file = b.path("src/umm/lib.zig") });
+    kernel.addAnonymousImport("code_root", .{ .root_source_file = b.path("mock/user_code.zig") });
+    kernel.addImport("jumptable", b.dependency("velox_jumptable", .{}).module("velox_jumptable"));
 
     // add asm
     kernel.addAssemblyFile(b.path("src/kernel/entry.s"));
@@ -27,13 +30,25 @@ pub fn build(b: *std.Build) void {
         .name = "velox",
     });
 
-    _ = exe.addObjCopy(.{
-        .format = .binary,
-    });
-
     exe.setLinkerScript(b.path("linker.ld"));
     exe.entry = .{ .symbol_name = "_velox_boot" };
-    b.installArtifact(exe);
 
+    b.installArtifact(exe);
     b.default_step.dependOn(&exe.step);
+
+    const upload = b.step("upload", "Upload to the brain");
+    const runCargoV5 = b.addSystemCommand(&.{
+        "cargo",
+        "v5",
+        "upload",
+        "--name",
+        "Velox",
+        "-d",
+        "Made with Velox",
+        "--upload-strategy",
+        "monolith",
+        "--file",
+    });
+    runCargoV5.addFileArg(exe.getEmittedBin());
+    upload.dependOn(&runCargoV5.step);
 }

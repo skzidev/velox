@@ -8,7 +8,7 @@
 .type __codesig, %object
 
 __codesig:
-    .word 0x56355347
+    .byte 0x58, 0x56, 0x58, 0x35
     .word 0x00000000
     .word 0x00000002
     .word 0x00000000
