@@ -17,9 +17,6 @@ export fn velox_startup() callconv(.c) noreturn {
     };
 
     jmptbl.vexPrivateApiEnable();
-
-    jmptbl.vexDisplayCircleDraw(100, 100, 100);
-
     //_ = jmptbl.vexTaskAdd(&main.vmain, 2, "velox_main");
     while (true) {
         @panic("hello");

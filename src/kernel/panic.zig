@@ -1,4 +1,12 @@
-pub fn panicHook(msg: []const u8, first_trace_addr: ?usize) noreturn {
+const std = @import("std");
+
+pub fn panicHook(
+    msg: []const u8,
+    error_return_trace: ?*std.builtin.StackTrace,
+    ret_addr: ?usize,
+) noreturn {
     _ = msg;
-    _ = first_trace_addr;
+    _ = error_return_trace;
+    _ = ret_addr;
+    while (true) {}
 }
