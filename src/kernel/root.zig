@@ -6,10 +6,29 @@ const codeRoot = @import("code_root");
 
 extern var _heap_start: u8;
 extern var _heap_end: u8;
-
 extern var _vector_table: u8;
 
-export fn velox_startup() callconv(.c) noreturn {
+fn fpuIsEnabled() bool {
+    const cpacr: u32 = asm volatile ("mrc p15, 0, %[out], c1, c0, 2"
+        : [out] "=r" (-> u32),
+    );
+
+    if ((cpacr & 0x00F00000) != 0x00F00000) {
+        return false;
+    }
+
+    const fpexc: u32 = asm volatile ("vmrs %[out], fpexc"
+        : [out] "=r" (-> u32),
+    );
+
+    return (fpexc & 0x40000000) != 0;
+}
+
+export fn velox_startup() noreturn {
+    if (!fpuIsEnabled()) {
+        @panic("FPU/NEON is not enabled");
+    }
+
     // setup heap allocator
     const heapStart = @intFromPtr(&_heap_start);
     const heapEnd = @intFromPtr(&_heap_end);
