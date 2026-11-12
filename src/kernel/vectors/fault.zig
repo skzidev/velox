@@ -17,5 +17,16 @@ pub const Fault = extern struct {
 };
 
 export fn _velox_fault_handler(fault: *Fault) noreturn {
-    _ = fault;
+    const cause: []const u8 = switch (fault.cause) {
+        .undefined_instruction => "undefined instruction",
+        .prefetch_abort => "prefetch abort",
+        .data_abort => "data abort",
+    };
+
+    _ = cause;
+
+    jmptbl.vexSystemExitRequest();
+    while (true) {
+        asm volatile ("nop");
+    }
 }
