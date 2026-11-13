@@ -3,6 +3,7 @@ const std = @import("std");
 const jmptbl = @import("jumptable");
 const main = @import("main.zig");
 const codeRoot = @import("code_root");
+const serial = @import("io/serial.zig");
 
 extern var _heap_start: u8;
 extern var _heap_end: u8;
@@ -49,6 +50,7 @@ export fn velox_startup() noreturn {
 
     jmptbl.vexPrivateApiEnable();
 
+    serial.write(@import("banner.zig").banner);
     // start loading main task
     _ = jmptbl.vexTaskAdd(&main.vmain, 2, "velox_main");
     while (true) {
