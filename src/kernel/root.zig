@@ -9,6 +9,7 @@ extern var _heap_start: u8;
 extern var _heap_end: u8;
 extern var _vector_table: u8;
 
+/// Checks if the FPU is enabled and NEON is enabled.
 fn fpuIsEnabled() bool {
     const cpacr: u32 = asm volatile ("mrc p15, 0, %[out], c1, c0, 2"
         : [out] "=r" (-> u32),
@@ -26,6 +27,8 @@ fn fpuIsEnabled() bool {
 }
 
 export fn velox_startup() noreturn {
+    // The BSS clearing routine requires SIMD code for faster execution, so bss may not be cleared.
+    // Additionally, Velox code is usually configured to use SIMD.
     if (!fpuIsEnabled()) {
         @panic("FPU/NEON is not enabled");
     }

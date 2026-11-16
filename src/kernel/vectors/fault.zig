@@ -8,6 +8,7 @@ pub const FaultCause = enum(u32) {
     data_abort = 2,
 };
 
+// ARM fault struct
 pub const Fault = extern struct {
     link_register: u32,
     stack_pointer: u32,
@@ -17,6 +18,7 @@ pub const Fault = extern struct {
     registers: [13]u32,
 };
 
+/// Handles CPU faults (finds the cause and passes it into a normal Zig panic)
 export fn _velox_fault_handler(fault: *Fault) noreturn {
     const cause: []const u8 = switch (fault.cause) {
         .undefined_instruction => "undefined instruction",

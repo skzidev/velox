@@ -2,6 +2,7 @@ const builtin = @import("builtin");
 const std = @import("std");
 const manifest = @import("manifest");
 
+/// Program banner
 pub const banner = std.fmt.comptimePrint(
     \\
     \\                            /|        | Velox v{s}

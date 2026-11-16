@@ -2,6 +2,7 @@ const std = @import("std");
 const serial = @import("io/serial.zig");
 const jmptbl = @import("jumptable");
 
+/// Zig panic handler implementation, since normal panics will cause CPU faults on the Brain.
 pub fn panicHook(
     msg: []const u8,
     error_return_trace: ?*std.builtin.StackTrace,

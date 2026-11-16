@@ -8,6 +8,9 @@
 .global __codesig
 .type __codesig, %object
 
+; Standard VEX program signature (XVX5 signature) and program header
+; Configures VEXos to kill all threads when main exits.
+
 __codesig:
     .byte 0x58, 0x56, 0x58, 0x35
     .word 0x00000000
@@ -24,6 +27,8 @@ __codesig:
 
 .global _velox_boot
 .type _velox_boot, %function
+
+; Small startup routine. Ensures NEON is enabled, clears BSS, then calls Velox's Zig code.
 
 _velox_boot:
     mov fp, #0
@@ -69,6 +74,8 @@ velox_fpu_ensure:
 
 .section .text.velox_zero_bss, "ax", %progbits
 .type velox_zero_bss, %function
+
+; Zeroes out the .bss section using NEON instructions
 
 velox_zero_bss:
     mov r2, #0
