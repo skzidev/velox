@@ -1,5 +1,6 @@
 const std = @import("std");
 const jmptbl = @import("jumptable");
+const serial = @import("../io/serial.zig");
 
 pub const FaultCause = enum(u32) {
     undefined_instruction = 0,
@@ -24,6 +25,7 @@ export fn _velox_fault_handler(fault: *Fault) noreturn {
     };
 
     _ = cause;
+    serial.write("CPU fault due to ");
 
     jmptbl.vexSystemExitRequest();
     while (true) {

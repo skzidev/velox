@@ -88,3 +88,5 @@ ASSERT(SIZEOF(.header) == 32, "Header must be exactly 32 bytes");
 _heap_start = .;
 _heap_end = ORIGIN(USER_RAM) + LENGTH(USER_RAM);
 __ram_end = ORIGIN(USER_RAM) + LENGTH(USER_RAM);
+
+INCLUDE zig-pkg/velox_jumptable-0.0.1-ZP9ZZ2C8BACeB7tZcLWKMX7jB6GAzEJnADERRWVi7TW5/addrs.ld
