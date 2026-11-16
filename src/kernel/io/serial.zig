@@ -18,7 +18,7 @@ pub fn write(str: []const u8) SerialWriteError!void {
 
         const count = jmptbl.vexSerialWriteBuffer(
             SERIAL_CHANNEL,
-            chunk.ptr,
+            @ptrCast(@constCast(chunk.ptr)),
             @intCast(chunk.len),
         );
         if (count == -1) return SerialWriteError.InternalWriteError;
@@ -32,6 +32,6 @@ pub fn write(str: []const u8) SerialWriteError!void {
 /// This function can (and its dependents) therefore not be called from within the VEXos scheduler.
 pub fn flush() void {
     while (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) != BUFFER_SIZE) {
-        jmptbl.vexTasksRun();
+        _ = jmptbl.vexTasksRun();
     }
 }

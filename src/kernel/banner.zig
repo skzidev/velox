@@ -7,7 +7,7 @@ pub const banner = std.fmt.comptimePrint(
     \\
     \\                            /|        | Velox v{s}
     \\  ______        ___________/_/        | Zig v{s}
-    \\ \\    \\      |     //     //        | Compiled for {s} ()
+    \\ \\    \\      |     //     //        | Compiled for {s}
     \\   \\    \\    |___//     //          | Safety checks {s}
     \\     \\    \\    //     //            | Debug symbols {s}
     \\       \\    \\//     //_____         |

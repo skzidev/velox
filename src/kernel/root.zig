@@ -26,14 +26,15 @@ fn fpuIsEnabled() bool {
     return (fpexc & 0x40000000) != 0;
 }
 
+/// Startup function which initializes the backing allocator, VBAR vectors, and does the incredibly important task of printing the banner.
 export fn velox_startup() noreturn {
-    // The BSS clearing routine requires SIMD code for faster execution, so bss may not be cleared.
-    // Additionally, Velox code is usually configured to use SIMD.
+    // The BSS clearing routine requires SIMD code for faster execution.
+    // Additionally, Velox code is usually configured to use SIMD. So panic if SIMD is disabled.
     if (!fpuIsEnabled()) {
         @panic("FPU/NEON is not enabled");
     }
 
-    // setup heap allocator
+    // setup backing allocator
     const heapStart = @intFromPtr(&_heap_start);
     const heapEnd = @intFromPtr(&_heap_end);
     const heapSlice = @as([*]u8, @ptrCast(&_heap_start))[0..(heapEnd - heapStart)];
@@ -53,11 +54,12 @@ export fn velox_startup() noreturn {
 
     jmptbl.vexPrivateApiEnable();
 
-    serial.write(@import("banner.zig").banner);
+    serial.write(@import("banner.zig").banner) catch {};
     // start loading main task
-    _ = jmptbl.vexTaskAdd(&main.vmain, 2, "velox_main");
+    //_ = jmptbl.vexTaskAdd(&main.vmain, 2, "velox_main");
     while (true) {
         _ = jmptbl.vexTasksRun();
+        @panic("oops");
     }
 }
 
