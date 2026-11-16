@@ -1,3 +1,5 @@
+//! System Daemon
+
 const jmptbl = @import("jumptable");
 const codeRoot = @import("code_root");
 const comp = @import("io/competition.zig");

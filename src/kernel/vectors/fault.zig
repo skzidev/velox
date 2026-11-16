@@ -24,11 +24,5 @@ export fn _velox_fault_handler(fault: *Fault) noreturn {
         .data_abort => "data abort",
     };
 
-    _ = cause;
-    serial.write("CPU fault due to ");
-
-    jmptbl.vexSystemExitRequest();
-    while (true) {
-        asm volatile ("nop");
-    }
+    @panic(cause);
 }
