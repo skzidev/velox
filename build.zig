@@ -52,6 +52,8 @@ pub fn build(b: *std.Build) !void {
         "Made with Velox",
         "--upload-strategy",
         "monolith",
+        "--slot",
+        "8",
         "--file",
     });
     runCargoV5.addFileArg(exe.getEmittedBin());

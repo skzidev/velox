@@ -5,29 +5,38 @@ const jmptbl = @import("jumptable");
 /// Zig panic handler implementation, since normal panics will cause CPU faults on the Brain.
 pub fn panicHook(
     msg: []const u8,
-    error_return_trace: ?*std.builtin.StackTrace,
-    ret_addr: ?usize,
+    _: ?*std.builtin.StackTrace,
+    _: ?usize,
 ) noreturn {
     var buffer: [4096]u8 = undefined;
     var fba: std.heap.FixedBufferAllocator = .init(&buffer);
     var allocator = fba.allocator();
 
-    const message = allocator.print("panic: {s}\n", .{msg}) catch "Unprintable exception";
+    const message = allocator.print("panic: '{s}'. Stack trace:\n", .{msg}) catch "panic: 'Unprintable exception'. Stack trace:\n";
     serial.write(message) catch {};
 
-    if (error_return_trace) |stack_trace| {
-        for (stack_trace.instruction_addresses) |address| {
-            const m = allocator.print("  at 0x{x:0>8}\n", .{
-                address,
-            }) catch "  at 0x????????";
-            defer allocator.free(m);
-            serial.write(m) catch {};
-        }
+    var fp = @frameAddress();
+    var count: usize = 0;
+    while (fp != 0 and count < 32) {
+        if (fp < 0x03400000 or fp >= 0x08000000 or (fp & 0x7) != 0) break;
+        const frame: *const [2]usize = @ptrFromInt(fp);
+        const saved_fp = frame[0];
+        const saved_lr = frame[1];
+
+        const m = allocator.print("    0x{x:0>8} (frame {d})\n", .{
+            saved_lr,
+            count,
+        }) catch "    0x???????? (unknown frame)\n";
+        serial.write(m) catch {};
+        allocator.free(m);
+
+        count += 1;
+        if (saved_fp <= fp) break;
+        fp = saved_fp;
     }
 
     allocator.free(message);
 
-    _ = ret_addr;
     while (true) {
         _ = jmptbl.vexTasksRun();
     }
