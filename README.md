@@ -2,7 +2,7 @@
 
 <h1 align="center">Velox</h1>
 
-<p align="center"><strong>Open Source Zig Framework for VEX V5.</strong></p>
+<p align="center"><strong>Freestanding Embedded Zig Kernel for VEX V5.</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/github/actions/workflow/status/skzidev/velox/build.yml?style=for-the-badge" alt="GitHub Actions Workflow Status">
