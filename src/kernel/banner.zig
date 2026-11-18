@@ -30,6 +30,6 @@ pub const banner = std.fmt.comptimePrint(
     builtin.zig_version_string,
     builtin.cpu.model.name,
     if (builtin.optimize.runtimeSafety()) "enabled" else "disabled",
-    builtin.optimize,
+    optimizationModeToString(builtin.optimize),
     if (builtin.strip_debug_info) "excluded" else "included",
 });
