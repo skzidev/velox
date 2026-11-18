@@ -32,6 +32,7 @@ pub fn write(str: []const u8) SerialWriteError!void {
 /// This function can (and its dependents) therefore not be called from within the VEXos scheduler.
 pub fn flush() void {
     while (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) != BUFFER_SIZE) {
-        _ = jmptbl.vexTasksRun();
+        //_ = jmptbl.vexTasksRun();
+        jmptbl.vexTaskSleep(2);
     }
 }

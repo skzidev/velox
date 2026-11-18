@@ -6,6 +6,7 @@ const codeRoot = @import("code_root");
 const serial = @import("io/serial.zig");
 const threading = @import("multitask/thread.zig");
 
+// linker-defined addresses and variables
 extern var _heap_start: u8;
 extern var _heap_end: u8;
 extern var _vector_table: u8;
@@ -27,6 +28,7 @@ fn fpuIsEnabled() bool {
     return (fpexc & 0x40000000) != 0;
 }
 
+/// main velox task
 var mainTask: threading.Thread = undefined;
 
 /// Startup function which initializes the backing allocator, VBAR vectors, and does the incredibly important task of printing the banner.
