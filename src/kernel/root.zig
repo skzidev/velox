@@ -4,6 +4,7 @@ const jmptbl = @import("jumptable");
 const main = @import("main.zig");
 const codeRoot = @import("code_root");
 const serial = @import("io/serial.zig");
+const threading = @import("multitask/thread.zig");
 
 extern var _heap_start: u8;
 extern var _heap_end: u8;
@@ -25,6 +26,8 @@ fn fpuIsEnabled() bool {
 
     return (fpexc & 0x40000000) != 0;
 }
+
+var mainTask: threading.Thread = undefined;
 
 /// Startup function which initializes the backing allocator, VBAR vectors, and does the incredibly important task of printing the banner.
 export fn velox_startup() noreturn {
@@ -53,13 +56,12 @@ export fn velox_startup() noreturn {
     asm volatile ("isb" ::: .{ .memory = true });
 
     jmptbl.vexPrivateApiEnable();
-
     serial.write(@import("banner.zig").banner) catch {};
-    // start loading main task
-    //_ = jmptbl.vexTaskAdd(&main.vmain, 2, "velox_main");
+
+    mainTask = .init(&main.vmain, 2, "velox_main");
+
     while (true) {
         _ = jmptbl.vexTasksRun();
-        @panic("oops");
     }
 }
 
