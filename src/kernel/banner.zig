@@ -26,7 +26,7 @@ pub const banner = std.fmt.comptimePrint(
     \\                |/                    | Copyright (c) 2026 59218C, licensed under MIT.
     \\
 , .{
-    "0.1.0-alpha",
+    "0.2.0-alpha",
     builtin.zig_version_string,
     builtin.cpu.model.name,
     if (builtin.optimize.runtimeSafety()) "enabled" else "disabled",

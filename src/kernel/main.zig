@@ -3,6 +3,7 @@ const codeRoot = @import("code_root");
 const std = @import("std");
 const juicyMain = @import("interfaces/juicy.zig");
 const ioInterface = @import("interfaces/io.zig");
+const serial = @import("io/serial.zig");
 
 fn doesAcceptJuicyMain(comptime T: type) bool {
     const info = @typeInfo(T);
@@ -17,6 +18,8 @@ fn doesAcceptJuicyMain(comptime T: type) bool {
 pub fn vmain() callconv(.c) i32 {
     const gpa: std.heap.DebugAllocator(.{}) = .init;
     const arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+
+    serial.write("hello world!\n") catch {};
 
     if (comptime doesAcceptJuicyMain(@TypeOf(codeRoot.main))) {
         codeRoot.main(juicyMain.Init{
