@@ -31,6 +31,5 @@ pub fn vmain() callconv(.c) i32 {
         codeRoot.main();
     }
 
-    codeRoot.main();
     return 0;
 }

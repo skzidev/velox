@@ -11,6 +11,15 @@ pub fn build(b: *std.Build) !void {
     });
     const optimize = b.standardOptimizeOption(.{});
 
+    const jumptable = b.dependency("velox_jumptable", .{}).module("velox_jumptable");
+
+    // user code
+    const user = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .root_source_file = b.path("mock/user_code.zig"),
+    });
+
     // kernel code
     const kernel = b.createModule(.{
         .target = target,
@@ -18,8 +27,8 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/kernel/root.zig"),
     });
     kernel.addAnonymousImport("umm", .{ .root_source_file = b.path("src/umm/lib.zig") });
-    kernel.addAnonymousImport("code_root", .{ .root_source_file = b.path("mock/user_code.zig") });
-    kernel.addImport("jumptable", b.dependency("velox_jumptable", .{}).module("velox_jumptable"));
+    kernel.addImport("code_root", user);
+    kernel.addImport("jumptable", jumptable);
 
     // add asm
     kernel.addAssemblyFile(b.path("src/kernel/entry.s"));
