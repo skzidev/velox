@@ -6,13 +6,16 @@ const SERIAL_CHANNEL: i32 = 1;
 const SerialWriteError = error{InternalWriteError};
 
 /// Writes a byte sequence to serial I/O.
-/// This function depends on flush() and cannot be called from with the VEXos scheduler.
+/// May block while waiting for buffer space; safe to call from VEXos task context.
 pub fn write(str: []const u8) SerialWriteError!void {
     var offset: usize = 0;
 
     while (offset < str.len) {
-        const chunk = str[offset..(offset + @min(BUFFER_SIZE, str.len - offset))];
-        if (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) < chunk.len) {
+        const remaining = str.len - offset;
+        const chunk_len: usize = @min(BUFFER_SIZE, remaining);
+        const chunk = str[offset..][0..chunk_len];
+
+        if (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) < @as(i32, @intCast(chunk_len))) {
             flush();
         }
 
@@ -21,18 +24,19 @@ pub fn write(str: []const u8) SerialWriteError!void {
             @ptrCast(@constCast(chunk.ptr)),
             @intCast(chunk.len),
         );
-        if (count == -1) return SerialWriteError.InternalWriteError;
-        if (count != chunk.len) break;
+        if (count < 0) return SerialWriteError.InternalWriteError;
+        if (count == 0) {
+            jmptbl.vexTaskSleep(2);
+            continue;
+        }
 
-        offset += chunk.len;
+        offset += @intCast(count);
     }
 }
 
-/// Flushes serial I/O by calling vexTasksRun (which runs the serial I/O task).
-/// This function can (and its dependents) therefore not be called from within the VEXos scheduler.
+/// Flushes serial I/O by waiting for the VEXos serial buffer to drain.
 pub fn flush() void {
-    while (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) != BUFFER_SIZE) {
-        //_ = jmptbl.vexTasksRun();
+    while (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) < BUFFER_SIZE) {
         jmptbl.vexTaskSleep(2);
     }
 }

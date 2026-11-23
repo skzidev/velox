@@ -72,7 +72,7 @@ pub fn UmmAllocator(comptime config: Config) type {
                 blocks_count += 1;
                 const next_block = current_block.next(self);
 
-                const block_size = if (current_block == last_block) 1 else @intFromEnum(next_block) - @intFromEnum(current_block);
+                const block_size = if (current_block == last_block) 1 else @backingInt(next_block) - @backingInt(current_block);
 
                 if (current_block.get_storage(self).is_free())
                     total_free_count += block_size;
@@ -116,7 +116,7 @@ pub fn UmmAllocator(comptime config: Config) type {
 
             loop: while (current != Block.first) {
                 const next_block = current.next(self);
-                const blocks_count = @intFromEnum(next_block) - @intFromEnum(current);
+                const blocks_count = @backingInt(next_block) - @backingInt(current);
 
                 if (config.debug_logging)
                     logger.debug("Looking at block {} size {}", .{ current, blocks_count });
@@ -220,7 +220,6 @@ pub fn UmmAllocator(comptime config: Config) type {
 
             block_storage.assimilate_up(block, self);
 
-            // TODO: assimilate_down
             const prev_block = block_storage.prev();
             if (prev_block != Block.first and prev_block.get_storage(self).is_free()) {
                 block_storage.assimilate_down(self, true);
@@ -250,7 +249,7 @@ pub fn UmmAllocator(comptime config: Config) type {
             while (true) {
                 const next_block = current.next(self);
 
-                const block_size = if (current == last) 1 else @intFromEnum(next_block) - @intFromEnum(current);
+                const block_size = if (current == last) 1 else @backingInt(next_block) - @backingInt(current);
                 if (config.debug_logging)
                     logger.debug("{} = {} size: {}", .{ current, current.get_storage(self), block_size });
                 current = next_block;
@@ -259,11 +258,11 @@ pub fn UmmAllocator(comptime config: Config) type {
         }
 
         inline fn get_block(_: Self, index: BlockIndexType) Block {
-            return @enumFromInt(@as(BlockIndexType, @intCast(index)));
+            return @fromBackingInt(@intCast(@as(BlockIndexType, @intCast(index))));
         }
 
         fn get_last_block(self: Self) Block {
-            return @enumFromInt(@as(BlockIndexType, @intCast(self.heap.len - 1)));
+            return @fromBackingInt(@intCast(@as(BlockIndexType, @intCast(self.heap.len - 1))));
         }
 
         const BlockIndexType = u32;
@@ -293,11 +292,11 @@ pub fn UmmAllocator(comptime config: Config) type {
                 body: Body,
 
                 fn is_free(self: *const Storage) bool {
-                    return @intFromEnum(self.header.used.next) & FreeListMask == FreeListMask;
+                    return @backingInt(self.header.used.next) & FreeListMask == FreeListMask;
                 }
 
                 fn next(self: *const Storage) Block {
-                    return @enumFromInt(@as(BlockIndexType, @intCast(@intFromEnum(self.header.used.next) & BlockNumberMask)));
+                    return @fromBackingInt(@intCast(@as(BlockIndexType, @intCast(@backingInt(self.header.used.next) & BlockNumberMask))));
                 }
 
                 fn set_next(self: *Storage, next_: Block, free_: bool) void {
@@ -309,7 +308,7 @@ pub fn UmmAllocator(comptime config: Config) type {
                 }
 
                 fn prev(self: *const Storage) Block {
-                    return @enumFromInt(@as(BlockIndexType, @intCast(@intFromEnum(self.header.used.prev) & BlockNumberMask)));
+                    return @fromBackingInt(@intCast(@as(BlockIndexType, @intCast(@backingInt(self.header.used.prev) & BlockNumberMask))));
                 }
 
                 fn set_prev(self: *Storage, prev_: Block) void {
@@ -335,7 +334,7 @@ pub fn UmmAllocator(comptime config: Config) type {
                 }
 
                 inline fn split(self: *Storage, self_block: Block, umm: *Self, blocks: usize) Block {
-                    const new_block = umm.get_block(@intCast(@intFromEnum(self_block) + blocks));
+                    const new_block = umm.get_block(@intCast(@backingInt(self_block) + blocks));
                     const new_block_storage = new_block.get_storage(umm);
 
                     new_block_storage.set_next(self.next(), true);
@@ -390,7 +389,7 @@ pub fn UmmAllocator(comptime config: Config) type {
             };
 
             fn get_storage(self: Block, umm: *const Self) *Storage {
-                return &umm.heap[@intFromEnum(self)];
+                return &umm.heap[@backingInt(self)];
             }
 
             fn calculate_number_of_blocks(size: usize) BlockIndexType {
@@ -421,11 +420,11 @@ pub fn UmmAllocator(comptime config: Config) type {
             }
 
             fn get_marked_as_free(self: Block) Block {
-                return @enumFromInt(@as(BlockIndexType, @intCast(@intFromEnum(self) | Block.FreeListMask)));
+                return @fromBackingInt(@intCast(@as(BlockIndexType, @intCast(@backingInt(self) | Block.FreeListMask))));
             }
 
             fn get_marked_as_used(self: Block) Block {
-                return @enumFromInt(@as(BlockIndexType, @intCast(@intFromEnum(self) & Block.BlockNumberMask)));
+                return @fromBackingInt(@intCast(@as(BlockIndexType, @intCast(@backingInt(self) & Block.BlockNumberMask))));
             }
         };
     };

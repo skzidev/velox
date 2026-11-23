@@ -5,11 +5,11 @@ pub const Thread = struct {
     interval: i32,
     callback: *const fn () callconv(.c) i32,
 
-    pub fn init(callback: *const fn () callconv(.c) i32, interval: i32, label: []const u8) Thread {
+    pub fn init(callback: *const fn () callconv(.c) i32, interval: i32, label: [:0]const u8) Thread {
         const idx = jmptbl.vexTaskAdd(
             callback,
             interval,
-            @ptrCast(label.ptr),
+            label.ptr,
         );
         return Thread{
             .idx = idx,

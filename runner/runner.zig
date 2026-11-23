@@ -1,80 +1,41 @@
 //! # On-Hardware Test Runner
 //!
-//! This is the user program for the test executable. It iterates over
-//! all Zig test functions (available via `builtin.test_functions`),
-//! runs each one, and prints `PASS` or `FAIL` to the serial console.
-//!
-//! The test runner is built using `runner/shim.zig` as the test runner
-//! shim, which provides a minimal `page_allocator` and empty `panic`
-//! handler for on-hardware execution.
+//! Iterates over Zig test functions and prints PASS/FAIL over serial.
+//! Built as a freestanding VEX V5 executable; it depends on kernel serial.
 
 const builtin = @import("builtin");
 const std = @import("std");
-const velox = @import("velox");
+const serial = @import("serial");
 
-pub const std_options = std.Options{
-    .page_size_max = 4096,
-    .page_size_min = 4096,
-};
-
-/// Entry point for the test runner. Must be compiled in test mode.
-///
-/// Iterates over all registered test functions, executes each one,
-/// and writes the result (`PASS` or `FAIL`) to serial. Prints a
-/// summary line when all tests complete.
-pub fn main(init: velox.Init) anyerror!void {
-    const stdout = velox.V5Io.File.stdout();
-    defer stdout.close(init.io);
-    const stderr = velox.V5Io.File.stderr();
-    defer stderr.close(init.io);
-    if (!builtin.is_test or !@hasDecl(builtin, "test_functions")) {
-        try stderr.writeStreamingAll(init.io, "this runner MUST be run in a test");
+pub fn main() void {
+    if (!builtin.is_test) {
+        serial.write("this runner MUST be built in test mode\n") catch {};
         return;
     }
 
-    const allocator: std.mem.Allocator = @constCast(&init.arena).allocator();
-
-    const testFunctions: []const std.builtin.TestFn = builtin.test_functions;
-
+    const test_functions = builtin.test_functions;
     var pass: u32 = 0;
     var fail: u32 = 0;
 
-    const start = init.io.vtable.now(null, .awake);
-
-    for (testFunctions) |testFunc| {
-        const msg = try std.fmt.allocPrint(
-            allocator,
-            "\"{s}\"...",
-            .{testFunc.name},
-        );
-        try stdout.writeStreamingAll(
-            init.io,
-            msg,
-        );
-        defer allocator.free(msg);
-        testFunc.func() catch {
-            try stdout.writeStreamingAll(init.io, "\x1b[31mFAIL\x1b[0m\n");
+    for (test_functions) |t| {
+        serial.write("\"") catch {};
+        serial.write(t.name) catch {};
+        serial.write("\"...") catch {};
+        t.func() catch {
+            serial.write("\x1b[31mFAIL\x1b[0m\n") catch {};
             fail += 1;
             continue;
         };
-        try stdout.writeStreamingAll(init.io, "\x1b[32mPASS\x1b[0m\n");
+        serial.write("\x1b[32mPASS\x1b[0m\n") catch {};
         pass += 1;
     }
 
-    const end = init.io.vtable.now(null, .awake);
-
-    try stdout.writeStreamingAll(
-        init.io,
-        std.fmt.allocPrint(
-            allocator,
-            "ran {d} tests ({d} passed, {d} failed) in {d}ms ({d}% passing rate)\n",
-            .{
-                testFunctions.len,
-                pass,
-                fail,
-                end.toMilliseconds() - start.toMilliseconds(),
-                pass / (pass + fail),
-            },
-        ) catch "testing complete (cannot format test statistics)\n",
-    );
+    var buf: [128]u8 = undefined;
+    const summary = std.fmt.bufPrint(
+        &buf,
+        "ran {d} tests ({d} passed, {d} failed)\n",
+        .{ test_functions.len, pass, fail },
+    ) catch "testing complete\n";
+    serial.write(summary) catch {};
+    serial.flush();
 }

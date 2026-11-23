@@ -34,7 +34,9 @@ pub const os = struct {
 /// Panic handler for the test runner. Spins forever — tests that
 /// trigger a panic will hang the brain until power-cycled.
 pub fn panic(_: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
-    while (true) {}
+    while (true) {
+        asm volatile ("nop");
+    }
 }
 
 /// Empty main — the real entry point is `runner.zig`.

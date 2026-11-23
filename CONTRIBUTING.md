@@ -33,10 +33,12 @@ Our CI checks formatting and will fail if formatting is incorrect. You should ru
 
 # Running Tests
 
-If you're contributing code, you're probably going to want to run our test suite. In order to do this, clone the repository, while keeping symlinks.
+If you're contributing code, you may want to run the test suite. Clone the repository while preserving symlinks.
 
-Then, plug in a brain and run `zig build test`. This will build and upload the tests to your brain.
+Build the on-hardware test artifact:
 
-After that, run `cargo v5 terminal`, and press the 8th slot on your brain, then press "run".
+```sh
+zig build test
+```
 
-This will run the unit test suite.
+This produces `zig-out/bin/velox-test`. Upload it to a V5 brain (for example with `cargo v5 upload`), then monitor serial output with `cargo v5 terminal` and run the program on the brain.

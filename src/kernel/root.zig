@@ -3,7 +3,7 @@ const std = @import("std");
 const jmptbl = @import("jumptable");
 const main = @import("main.zig");
 const codeRoot = @import("code_root");
-const serial = @import("io/serial.zig");
+const serial = @import("serial");
 const threading = @import("multitask/thread.zig");
 
 // linker-defined addresses and variables

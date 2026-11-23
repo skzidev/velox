@@ -2,7 +2,7 @@
 
 <h1 align="center">Velox</h1>
 
-<p align="center"><strong>Freestanding Embedded Zig Kernel for VEX V5.</strong></p>
+<p align="center"><strong>Embedded Zig Kernel for VEX V5.</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/github/actions/workflow/status/skzidev/velox/build.yml?style=for-the-badge" alt="GitHub Actions Workflow Status">
@@ -15,18 +15,10 @@
 
 To get started using Velox, you must have the following software installed:
 
-- Zig
-- Cargo (and cargo-v5)
+- Zig 0.16.x (see badge; CI uses latest Zig)
+- Cargo + `cargo-v5` for uploading (temporary until a native uploader exists)
 
-We're looking to replace cargo-v5 so you don't need to install cargo, but we haven't yet. This requirement should be replaced soon, hopefully.
-
-Additionally, this installation script only runs in UNIX environments (Linux and MacOS). Windows will be supported later.
-
-Create a new project folder and run this command:
-
-```sh
-curl -fsSL "https://raw.githubusercontent.com/skzidev/velox/refs/heads/main/new_project.sh" | sh
-```
+Create a project and wire Velox as a dependency in `build.zig`/`build.zig.zon`. A project template script is not currently shipped in this repository.
 
 ## Roadmap
 
@@ -66,15 +58,9 @@ Velox builds on their research into the Brain's memory model and configuration.
 ## Tests
 
 > [!WARNING]
-> When cloning this repostiory to run the unit tests, preserve symlinks. Not doing this will break the unit tests for the umm allocator. Especially on Windows.
+> When cloning this repository to run unit tests, preserve symlinks, especially on Windows.
 
-Velox's unit tests run on the brain hardware. To run them yourself, plug in a brain and run the command:
-
-```sh
-zig build test
-```
-
-You can see the unit test results over serial.
+`zig build test` builds an on-hardware test artifact (`zig-out/bin/velox-test`) using the kernel + runner shim. Upload it to a V5 brain and monitor serial output to see results.
 
 > [!NOTE]
-> Because we don't have a V5 brain as a test runner, these unit tests are not part of our CI.
+> Because we don't have a V5 brain as a CI test runner, on-hardware tests are not executed in CI.
