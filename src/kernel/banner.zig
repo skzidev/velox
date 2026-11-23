@@ -15,12 +15,12 @@ pub const banner = std.fmt.comptimePrint(
     \\
     \\                            /|        | Velox v{s}
     \\  ______        ___________/_/        | Zig v{s}
-    \\ \    \      |     //     //        | Compilation target: {s}
-    \\   \    \    |___//     //          | Runtime safety: {s}
-    \\     \    \    //     //            | Build Mode: {s}
-    \\       \    \//     //_____         | Debug symbols: {s}
-    \\         \         //       |        |
-    \\          \_______//________|        |
+    \\ \\    \\      |     //     //        | Compilation target: {s}
+    \\   \\    \\    |___//     //          | Runtime safety: {s}
+    \\     \\    \\    //     //            | Build Mode: {s}
+    \\       \\    \\//     //_____         | Debug symbols: {s}
+    \\         \\         //       |        |
+    \\          \\_______//________|        |
     \\                / /                   |
     \\                |/                    | Copyright (c) 2026 59218C, licensed under MIT.
     \\
