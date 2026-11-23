@@ -4,33 +4,45 @@ const jmptbl = @import("jumptable");
 const fiber = @import("./fiber.zig");
 const Fiber = fiber.Fiber;
 
-extern fn switchTaskCtx(old: *fiber.CpuContext, new: *fiber.CpuContext) noreturn;
+/// Task switching subroutine
+extern fn _velox_task_switch(
+    old: *fiber.CpuContext,
+    new: *fiber.CpuContext,
+) callconv(.{ .arm_aapcs = .{} }) noreturn;
 
+fn cmpFiberPriorities(context: Fiber, item: Fiber) std.math.Order {
+    return std.math.order(context.priority, item.priority);
+}
+
+/// Cooperative fiber scheduler.
 pub const Scheduler = struct {
+    rootCtx: fiber.CpuContext,
     tasks: std.ArrayList(Fiber),
-    allocator: std.mem.Allocator,
-    current: *fiber.CpuContext,
 
-    pub fn init(gpa: std.mem.Allocator) Scheduler {
+    pub fn init() Scheduler {
         return .{
             .tasks = .empty,
-            .allocator = gpa,
+            .rootCtx = undefined,
         };
     }
 
     pub fn runTasks(self: *const Scheduler) void {
         for (self.tasks.items) |task| {
-            switchTaskCtx(self.current, &task.ctx);
+            _velox_task_switch(&self.rootCtx, task.ctx);
         }
     }
 
-    pub fn spawn(self: *const Scheduler, priority: u8) !Fiber {
-        const task = Fiber{
-            .ctx = try self.allocator.create(fiber.CpuContext),
-            .priority = priority,
-            .stack = try self.allocator.alloc(u8, 255),
-        };
-        try self.tasks.addOne(task);
-        return task;
+    pub fn spawn(
+        self: *const Scheduler,
+        allocator: std.mem.Allocator,
+    ) !void {
+        _ = self;
+        _ = allocator;
+    }
+
+    fn add(self: *const Scheduler, task: Fiber) !usize {
+        const idx = std.sort.lowerBound(Fiber, self.tasks.items, task, cmpFiberPriorities);
+        try self.tasks.insert(idx, task);
+        return idx;
     }
 };

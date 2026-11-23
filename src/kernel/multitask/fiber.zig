@@ -1,3 +1,4 @@
+/// CPU register context struct.
 pub const CpuContext = extern struct {
     r4: u32,
     r5: u32,
@@ -12,6 +13,7 @@ pub const CpuContext = extern struct {
     lr: u32,
 };
 
+/// Fiber state enum.
 pub const FiberState = enum {
     ready,
     running,
@@ -19,8 +21,10 @@ pub const FiberState = enum {
     finished,
 };
 
+/// Fiber struct
 pub const Fiber = struct {
     ctx: *CpuContext,
     priority: u8,
     stack: []u8,
+    task: *const fn () void,
 };

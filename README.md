@@ -13,7 +13,7 @@
 
 ## What is it?
 
-Velox is an embedded Zig kernel for VEX V5. It implements multitasking using stackful coroutines, 
+Velox is an embedded Zig kernel for VEX V5. It implements multitasking using fibers.
 
 ## Getting Started
 
