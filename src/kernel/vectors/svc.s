@@ -1,7 +1,7 @@
 .section .text.handlers, "ax"
 .arm
 
-.align 2
+.balign 4
 .global svc_handler
 
 svc_handler:

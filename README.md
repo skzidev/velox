@@ -11,6 +11,10 @@
   <img src="https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fskzidev%2Fvelox%2Frefs%2Fheads%2Fmain%2Fbuild.zig.zon&search=%5C.version%20%3D%20%22(%5Cd%5C.%5Cd%5C.%5Cd)%22&replace=%241&style=for-the-badge&label=Version" alt="Velox Version">
 </p>
 
+## What is it?
+
+Velox is an embedded Zig kernel for VEX V5. It implements multitasking using stackful coroutines, 
+
 ## Getting Started
 
 To get started using Velox, you must have the following software installed:
@@ -19,25 +23,6 @@ To get started using Velox, you must have the following software installed:
 - Cargo + `cargo-v5` for uploading (temporary until a native uploader exists)
 
 Create a project and wire Velox as a dependency in `build.zig`/`build.zig.zon`. A project template script is not currently shipped in this repository.
-
-## Roadmap
-
-- [x] Write boot code
-- [x] Custom Allocator Override
-- [x] Panic handler with stack traces
-- [x] Jumptable integration
-- [x] Device Drivers (_partially done_)
-- [ ] Custom Uploader program
-- [ ] GUI library written on top of [Zigui](https://github.com/ddalcu/zigui)
-
-#### Additional work
-
-- [ ] Refactor `velox-jumptable` to just read from C header files and map memory addresses instead of generating bindings
-- [ ] Refactor `velox-jumptable` into this monorepo
-
-## Competition Legality
-
-Velox should be 100% legal. It is simply a framework for writing user programs.
 
 ## Licensing
 
@@ -54,13 +39,3 @@ This project would not have been possible without the research from these projec
 - [VEXAPI](https://github.com/cetio/VEXAPI)
 
 Velox builds on their research into the Brain's memory model and configuration.
-
-## Tests
-
-> [!WARNING]
-> When cloning this repository to run unit tests, preserve symlinks, especially on Windows.
-
-`zig build test` builds an on-hardware test artifact (`zig-out/bin/velox-test`) using the kernel + runner shim. Upload it to a V5 brain and monitor serial output to see results.
-
-> [!NOTE]
-> Because we don't have a V5 brain as a CI test runner, on-hardware tests are not executed in CI.

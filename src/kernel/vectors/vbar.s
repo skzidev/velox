@@ -1,7 +1,7 @@
 .section .vectors, "ax"
 .arm
 
-.align 5
+.balign 32
 .global _vector_table
 
 _vector_table:

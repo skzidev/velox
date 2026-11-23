@@ -1,7 +1,7 @@
 .section .text.handlers, "ax"
 .arm
 
-.align 2
+.balign 4
 .global fiq_handler
 
 fiq_handler:

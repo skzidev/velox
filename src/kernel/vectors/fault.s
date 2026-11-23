@@ -1,6 +1,6 @@
 .section .text.handlers, "ax"
 .arm
-.align 2
+.balign 4
 .global fault_handler_undef
 fault_handler_undef:
     dsb

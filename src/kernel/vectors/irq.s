@@ -1,7 +1,7 @@
 .section .text.handlers, "ax"
 .arm
 
-.align 2
+.balign 4
 .global irq_handler
 irq_handler:
     stmdb sp!, {r0-r3, r12, lr}
