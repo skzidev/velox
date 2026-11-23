@@ -18,7 +18,7 @@ pub const banner = std.fmt.comptimePrint(
     \\ \\    \\      |     //     //        | Compilation target: {s}
     \\   \\    \\    |___//     //          | Runtime safety: {s}
     \\     \\    \\    //     //            | Build Mode: {s}
-    \\       \\    \\//     //_____         | Debug symbols: {s}
+    \\       \\    \\//     //_____         |
     \\         \\         //       |        |
     \\          \\_______//________|        |
     \\                / /                   |
@@ -30,5 +30,4 @@ pub const banner = std.fmt.comptimePrint(
     builtin.cpu.model.name,
     if (builtin.mode == .debug or builtin.mode == .safe) "enabled" else "disabled",
     optimizationModeToString(builtin.mode),
-    if (builtin.strip_debug_info) "excluded" else "included",
 });

@@ -6,7 +6,9 @@ const SERIAL_CHANNEL: i32 = 1;
 const SerialWriteError = error{InternalWriteError};
 
 /// Writes a byte sequence to serial I/O.
-/// May block while waiting for buffer space; safe to call from VEXos task context.
+/// May block while waiting for buffer space.
+///
+/// Unsafe to call from VEXos task context.
 pub fn write(str: []const u8) SerialWriteError!void {
     var offset: usize = 0;
 
@@ -35,8 +37,10 @@ pub fn write(str: []const u8) SerialWriteError!void {
 }
 
 /// Flushes serial I/O by waiting for the VEXos serial buffer to drain.
+///
+/// Unsafe to call from VEXos task context.
 pub fn flush() void {
     while (jmptbl.vexSerialWriteFree(SERIAL_CHANNEL) < BUFFER_SIZE) {
-        jmptbl.vexTaskSleep(2);
+        _ = jmptbl.vexTasksRun();
     }
 }

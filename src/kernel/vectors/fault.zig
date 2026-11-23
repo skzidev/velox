@@ -1,4 +1,5 @@
 const std = @import("std");
+const panics = @import("../panic.zig");
 
 pub const FaultCause = enum(u32) {
     undefined_instruction = 0,
@@ -48,5 +49,5 @@ export fn _velox_fault_handler(fault: *Fault) noreturn {
         },
     ) catch cause;
 
-    @panic(msg);
+    panics.faultPanic(fault, msg);
 }

@@ -3,6 +3,7 @@ const std = @import("std");
 const jmptbl = @import("jumptable");
 const codeRoot = @import("code_root");
 const serial = @import("serial");
+const scheduling = @import("multitask/scheduler.zig");
 
 // linker-defined addresses and variables
 extern var _heap_start: u8;
@@ -24,6 +25,10 @@ fn fpuIsEnabled() bool {
     );
 
     return (fpexc & 0x40000000) != 0;
+}
+
+fn mainTask() void {
+    serial.write("Hello, world!\n") catch {};
 }
 
 /// Startup function which initializes the backing allocator, VBAR vectors, and does the incredibly important task of printing the banner.
@@ -55,7 +60,13 @@ export fn velox_startup() noreturn {
     jmptbl.vexPrivateApiEnable();
     serial.write(@import("banner.zig").banner) catch {};
 
+    var scheduler: scheduling.Scheduler = .init(global_alloc.allocator());
+    scheduler.spawn(&mainTask, 1) catch {
+        @panic("Failed to start main task");
+    };
+
     while (true) {
+        scheduler.runTasks();
         _ = jmptbl.vexTasksRun();
     }
 }

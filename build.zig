@@ -59,6 +59,7 @@ pub fn build(b: *std.Build) !void {
     kernel.addAssemblyFile(b.path("src/kernel/entry.s"));
     kernel.addAssemblyFile(b.path("src/kernel/vectors/fault.s"));
     kernel.addAssemblyFile(b.path("src/kernel/vectors/fiq.s"));
+    kernel.addAssemblyFile(b.path("src/kernel/multitask/switching.s"));
     kernel.addAssemblyFile(b.path("src/kernel/vectors/svc.s"));
     kernel.addAssemblyFile(b.path("src/kernel/vectors/irq.s"));
     kernel.addAssemblyFile(b.path("src/kernel/vectors/vbar.s"));
