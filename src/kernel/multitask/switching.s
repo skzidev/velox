@@ -14,3 +14,10 @@ _velox_task_switch:
     ldmia r1!, {r4-r11, lr}
 
     bx lr
+
+.global _velox_task_trampoline
+
+_velox_task_trampoline:
+    @ r0 = user function
+    blx r0
+    @ b task_exit once task_exit is created

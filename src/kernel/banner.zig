@@ -20,7 +20,7 @@ pub const banner = std.fmt.comptimePrint(
     \\     \\    \\    //     //            | Build Mode: {s}
     \\       \\    \\//     //_____         |
     \\         \\         //       |        |
-    \\          \\_______//________|        |
+    \\           \\_____//_________|        |
     \\                / /                   |
     \\                |/                    | Copyright (c) 2026 59218C, licensed under MIT.
     \\

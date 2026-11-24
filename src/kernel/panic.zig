@@ -61,7 +61,7 @@ pub fn faultPanic(fault: *const faults.Fault, msg: []const u8) noreturn {
     serial.write("Register Dump:\n") catch {};
 
     for (fault.registers, 0..) |register, idx| {
-        const line = alloc.print("  r{d}={x:0>8}", .{ idx, register }) catch "  r?=0x????????";
+        const line = alloc.print("  r{d}=0x{x:0>8}\n", .{ idx, register }) catch "  r?=0x????????";
         serial.write(line) catch {};
         alloc.free(line);
     }

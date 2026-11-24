@@ -9,8 +9,8 @@ pub const CpuContext = extern struct {
     r10: u32,
     r11: u32,
 
-    sp: u32,
     lr: u32,
+    sp: u32,
 };
 
 /// Fiber state enum.

@@ -1,6 +1,8 @@
 const std = @import("std");
 const jmptbl = @import("jumptable");
 
+const systemMode = 0x1f;
+
 const fiber = @import("./fiber.zig");
 const Fiber = fiber.Fiber;
 
@@ -9,6 +11,8 @@ extern fn _velox_task_switch(
     old: *fiber.CpuContext,
     new: *fiber.CpuContext,
 ) callconv(.{ .arm_aapcs = .{} }) noreturn;
+
+extern fn _velox_task_trampoline() callconv(.{ .arm_aapcs = .{} }) noreturn;
 
 fn cmpFiberPriorities(context: Fiber, item: Fiber) std.math.Order {
     return std.math.order(context.priority, item.priority);
@@ -42,6 +46,7 @@ pub const Scheduler = struct {
         }
     }
 
+    /// Spawn a task that runs func with priority
     pub fn spawn(
         self: Self,
         func: *const fn () void,
@@ -53,6 +58,17 @@ pub const Scheduler = struct {
             .stack = try self.allocator.alloc(u8, 255),
             .task = func,
         };
+        task.ctx.sp = @intFromPtr(&task.stack);
+        task.ctx.lr = @intFromPtr(&_velox_task_trampoline);
+
+        // set all gprs to 0
+        const T = @typeInfo(fiber.CpuContext).@"struct";
+        inline for (T.field_names) |name| {
+            // not gpr
+            if (name.len > 0 and name[0] != 'r') continue;
+            @field(task.ctx, name) = 0;
+        }
+
         _ = try self.add(task);
     }
 
